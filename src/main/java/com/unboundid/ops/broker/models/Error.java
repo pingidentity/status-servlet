@@ -8,7 +8,7 @@ package com.unboundid.ops.broker.models;
 /**
  * A Broker status error.
  *
- * @author jacobc
+ * @author Jacob Childress <jacob.childress@unboundid.com>
  */
 public class Error
 {
