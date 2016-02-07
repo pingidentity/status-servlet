@@ -12,6 +12,7 @@ package com.unboundid.ops.broker.models;
  */
 public class Error
 {
+  private final Throwable cause;
   private final String message;
 
 
@@ -23,7 +24,19 @@ public class Error
    */
   public Error(Throwable throwable)
   {
+    this.cause = throwable;
     this.message = throwable.getMessage();
+  }
+
+
+  /**
+   * Gets the error cause.
+   *
+   * @return The error cause.
+   */
+  public Throwable getCause()
+  {
+    return cause;
   }
 
 
