@@ -25,10 +25,10 @@ restart the connection handler.
 dsconfig create-http-servlet-extension --extension-name Status \
   --type third-party --set "description:Reports Broker service availability" \
   --set extension-class:com.unboundid.ops.broker.BrokerStatusServletExtension \
-  --add extension-argument:path=/status \
-  --add extension-argument:monitored-servlet=OAuth \
-  --add extension-argument:monitored-servlet=SCIM2 \
-  --add extension-argument:monitored-servlet=UserInfo
+  --set extension-argument:path=/status \
+  --set extension-argument:monitored-servlet=OAuth \
+  --set extension-argument:monitored-servlet=SCIM2 \
+  --set extension-argument:monitored-servlet=UserInfo
 dsconfig set-connection-handler-prop --handler-name "HTTPS Connection Handler" \
   --set enabled:false --add http-servlet-extension:Status
 dsconfig set-connection-handler-prop --handler-name "HTTPS Connection Handler" \
