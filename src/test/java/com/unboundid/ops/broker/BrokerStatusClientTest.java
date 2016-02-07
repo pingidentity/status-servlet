@@ -9,6 +9,7 @@ import com.unboundid.ldap.listener.InMemoryDirectoryServer;
 import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
 import com.unboundid.ldap.sdk.Entry;
 import com.unboundid.ldap.sdk.LDAPConnection;
+import com.unboundid.ldap.sdk.LDAPConnectionOptions;
 import com.unboundid.ldap.sdk.schema.Schema;
 import com.unboundid.ops.broker.models.*;
 import com.unboundid.ops.broker.models.Error;
@@ -76,45 +77,13 @@ public class BrokerStatusClientTest
     ds.clear();
     addBaseEntry();
 
-    Entry servletEntry = new Entry("cn=Http Servlet Configuration,cn=monitor");
-    servletEntry.addAttribute("objectClass", "top");
-    servletEntry.addAttribute("objectClass", "ds-monitor-entry");
-    servletEntry.addAttribute("objectClass", "ds-http-servlet-config-monitor-entry");
-    servletEntry.addAttribute("objectClass", "extensibleObject");
-    servletEntry.addAttribute("cn", "Http Servlet Configuration");
-    servletEntry.addAttribute("enabled-servlet-and-path",
-                              "Monitored Servlet https://example.com/monitoredServlet");
-    servletEntry.addAttribute("enabled-servlet-and-path",
-                              "Unmonitored Servlet https://example.com/unmonitoredServlet");
-
-    Entry lbaEntry =
-            new Entry("cn=load-balancing algorithm User Store LBA,cn=monitor");
-    lbaEntry.addAttribute("objectClass", "top");
-    lbaEntry.addAttribute("objectClass", "ds-monitor-entry");
-    lbaEntry.addAttribute("objectClass",
-                          "ds-load-balancing-algorithm-monitor-entry");
-    lbaEntry.addAttribute("objectClass", "extensibleObject");
-    lbaEntry.addAttribute("cn", "load-balancing algorithm User Store LBA");
-    lbaEntry.addAttribute("algorithm-name", "User Store LBA");
-    lbaEntry.addAttribute("config-entry-dn",
-                          "cn=User Store LBA,cn=Load-Balancing Algorithms,cn=config");
-    lbaEntry.addAttribute("health-check-state", "AVAILABLE");
-    lbaEntry.addAttribute("local-servers-health-check-state", "AVAILABLE");
-    lbaEntry.addAttribute("non-local-servers-health-check-state", "AVAILABLE");
-    lbaEntry.addAttribute("ldap-external-server", "example.com:636:AVAILABLE");
-    lbaEntry.addAttribute("num-available-servers", "1");
-    lbaEntry.addAttribute("num-degraded-servers", "0");
-    lbaEntry.addAttribute("num-unavailable-servers", "0");
-
-    Entry storeAdapterEntry =
-            new Entry("cn=Store Adapter UserStoreAdapter,cn=monitor");
-    storeAdapterEntry.addAttribute("objectClass", "top");
-    storeAdapterEntry.addAttribute("objectClass", "ds-monitor-entry");
-    storeAdapterEntry.addAttribute("objectClass", "ds-store-adapter-monitor-entry");
-    storeAdapterEntry.addAttribute("objectClass", "extensibleObject");
-    storeAdapterEntry.addAttribute("cn", "Store Adapter UserStoreAdapter");
-    storeAdapterEntry.addAttribute("store-adapter-name", "UserStoreAdapter");
-    storeAdapterEntry.addAttribute("store-adapter-status", "AVAILABLE");
+    Entry servletEntry = createServletEntry(
+            "Monitored Servlet https://example.com/monitoredServlet",
+            "Unmonitored Servlet https://example.com/unmonitoredServlet");
+    Entry lbaEntry = createLoadBalancingAlgorithmEntry(
+            "User Store LBA", "AVAILABLE", 1, 0, 0);
+    Entry storeAdapterEntry = createStoreAdapterEntry(
+            "UserStoreAdapter", "AVAILABLE");
 
     ds.add(servletEntry);
     ds.add(lbaEntry);
@@ -140,6 +109,9 @@ public class BrokerStatusClientTest
       LoadBalancingAlgorithmStatus lbaStatus = lbaStatusList.get(0);
       assertEquals(lbaStatus.getName(), "User Store LBA");
       assertTrue(lbaStatus.isAvailable());
+      assertEquals(lbaStatus.getNumAvailableServers(), 1);
+      assertEquals(lbaStatus.getNumDegradedServers(), 0);
+      assertEquals(lbaStatus.getNumUnavailableServers(), 0);
 
       List<StoreAdapterStatus> storeAdapterStatusList =
               status.getStoreAdapterStatuses();
@@ -161,42 +133,12 @@ public class BrokerStatusClientTest
     ds.clear();
     addBaseEntry();
 
-    Entry servletEntry = new Entry("cn=Http Servlet Configuration,cn=monitor");
-    servletEntry.setAttribute("objectClass", "top");
-    servletEntry.setAttribute("objectClass", "ds-monitor-entry");
-    servletEntry.setAttribute("objectClass", "ds-http-servlet-config-monitor-entry");
-    servletEntry.setAttribute("objectClass", "extensibleObject");
-    servletEntry.setAttribute("cn", "Http Servlet Configuration");
-    servletEntry.setAttribute("enabled-servlet-and-path",
-                              "Unmonitored Servlet https://example.com/unmonitoredServlet");
-
-    Entry lbaEntry =
-            new Entry("cn=load-balancing algorithm User Store LBA,cn=monitor");
-    lbaEntry.setAttribute("objectClass", "top");
-    lbaEntry.setAttribute("objectClass", "ds-monitor-entry");
-    lbaEntry.setAttribute("objectClass",
-                          "ds-load-balancing-algorithm-monitor-entry");
-    lbaEntry.setAttribute("objectClass", "extensibleObject");
-    lbaEntry.setAttribute("cn", "load-balancing algorithm User Store LBA");
-    lbaEntry.setAttribute("algorithm-name", "User Store LBA");
-    lbaEntry.setAttribute("config-entry-dn",
-                          "cn=User Store LBA,cn=Load-Balancing Algorithms,cn=config");
-    lbaEntry.setAttribute("local-servers-health-check-state", "UNAVAILABLE");
-    lbaEntry.setAttribute("non-local-servers-health-check-state", "UNAVAILABLE");
-    lbaEntry.setAttribute("ldap-external-server", "example.com:636:UNAVAILABLE");
-    lbaEntry.setAttribute("num-available-servers", "0");
-    lbaEntry.setAttribute("num-degraded-servers", "0");
-    lbaEntry.setAttribute("num-unavailable-servers", "1");
-
-    Entry storeAdapterEntry =
-            new Entry("cn=Store Adapter UserStoreAdapter,cn=monitor");
-    storeAdapterEntry.setAttribute("objectClass", "top");
-    storeAdapterEntry.setAttribute("objectClass", "ds-monitor-entry");
-    storeAdapterEntry.setAttribute("objectClass", "ds-store-adapter-monitor-entry");
-    storeAdapterEntry.setAttribute("objectClass", "extensibleObject");
-    storeAdapterEntry.setAttribute("cn", "Store Adapter UserStoreAdapter");
-    storeAdapterEntry.setAttribute("store-adapter-name", "UserStoreAdapter");
-    storeAdapterEntry.setAttribute("store-adapter-status", "UNAVAILABLE");
+    Entry servletEntry = createServletEntry(
+            "Unmonitored Servlet https://example.com/unmonitoredServlet");
+    Entry lbaEntry = createLoadBalancingAlgorithmEntry(
+            "User Store LBA", "AVAILABLE", 1, 0, 0);
+    Entry storeAdapterEntry = createStoreAdapterEntry(
+            "UserStoreAdapter", "AVAILABLE");
 
     ds.add(servletEntry);
     ds.add(lbaEntry);
@@ -210,11 +152,25 @@ public class BrokerStatusClientTest
       BrokerStatus status = client.getStatus();
       assertFalse(status.isOK());
 
-      Error error = status.getError();
-      assertNotNull(error);
-      assertNotNull(error.getMessage());
-      assertTrue(error.getMessage().contains(
-              "Expected one and only one HTTP servlet config monitor entry"));
+      List<ServletStatus> servletStatusList = status.getServletStatuses();
+      assertEquals(servletStatusList.size(), 1);
+      ServletStatus servletStatus = servletStatusList.get(0);
+      assertEquals(servletStatus.getName(), "Monitored Servlet");
+      assertFalse(servletStatus.isEnabled());
+
+      List<LoadBalancingAlgorithmStatus> lbaStatusList =
+              status.getLoadBalancingAlgorithmStatuses();
+      assertEquals(lbaStatusList.size(), 1);
+      LoadBalancingAlgorithmStatus lbaStatus = lbaStatusList.get(0);
+      assertEquals(lbaStatus.getName(), "User Store LBA");
+      assertTrue(lbaStatus.isAvailable());
+
+      List<StoreAdapterStatus> storeAdapterStatusList =
+              status.getStoreAdapterStatuses();
+      assertEquals(storeAdapterStatusList.size(), 1);
+      StoreAdapterStatus storeAdapterStatus = storeAdapterStatusList.get(0);
+      assertEquals(storeAdapterStatus.getName(), "UserStoreAdapter");
+      assertTrue(storeAdapterStatus.isAvailable());
     }
     finally
     {
@@ -229,45 +185,13 @@ public class BrokerStatusClientTest
     ds.clear();
     addBaseEntry();
 
-    Entry servletEntry = new Entry("cn=Http Servlet Configuration,cn=monitor");
-    servletEntry.addAttribute("objectClass", "top");
-    servletEntry.addAttribute("objectClass", "ds-monitor-entry");
-    servletEntry.addAttribute("objectClass", "ds-http-servlet-config-monitor-entry");
-    servletEntry.addAttribute("objectClass", "extensibleObject");
-    servletEntry.addAttribute("cn", "Http Servlet Configuration");
-    servletEntry.addAttribute("enabled-servlet-and-path",
-                              "Monitored Servlet https://example.com/monitoredServlet");
-    servletEntry.addAttribute("enabled-servlet-and-path",
-                              "Unmonitored Servlet https://example.com/unmonitoredServlet");
-
-    Entry lbaEntry =
-            new Entry("cn=load-balancing algorithm User Store LBA,cn=monitor");
-    lbaEntry.addAttribute("objectClass", "top");
-    lbaEntry.addAttribute("objectClass", "ds-monitor-entry");
-    lbaEntry.addAttribute("objectClass",
-                          "ds-load-balancing-algorithm-monitor-entry");
-    lbaEntry.addAttribute("objectClass", "extensibleObject");
-    lbaEntry.addAttribute("cn", "load-balancing algorithm User Store LBA");
-    lbaEntry.addAttribute("algorithm-name", "User Store LBA");
-    lbaEntry.addAttribute("config-entry-dn",
-                          "cn=User Store LBA,cn=Load-Balancing Algorithms,cn=config");
-    lbaEntry.addAttribute("health-check-state", "UNAVAILABLE");
-    lbaEntry.addAttribute("local-servers-health-check-state", "UNAVAILABLE");
-    lbaEntry.addAttribute("non-local-servers-health-check-state", "UNAVAILABLE");
-    lbaEntry.addAttribute("ldap-external-server", "example.com:636:UNAVAILABLE");
-    lbaEntry.addAttribute("num-available-servers", "1");
-    lbaEntry.addAttribute("num-degraded-servers", "0");
-    lbaEntry.addAttribute("num-unavailable-servers", "0");
-
-    Entry storeAdapterEntry =
-            new Entry("cn=Store Adapter UserStoreAdapter,cn=monitor");
-    storeAdapterEntry.addAttribute("objectClass", "top");
-    storeAdapterEntry.addAttribute("objectClass", "ds-monitor-entry");
-    storeAdapterEntry.addAttribute("objectClass", "ds-store-adapter-monitor-entry");
-    storeAdapterEntry.addAttribute("objectClass", "extensibleObject");
-    storeAdapterEntry.addAttribute("cn", "Store Adapter UserStoreAdapter");
-    storeAdapterEntry.addAttribute("store-adapter-name", "UserStoreAdapter");
-    storeAdapterEntry.addAttribute("store-adapter-status", "AVAILABLE");
+    Entry servletEntry = createServletEntry(
+            "Monitored Servlet https://example.com/monitoredServlet",
+            "Unmonitored Servlet https://example.com/unmonitoredServlet");
+    Entry lbaEntry = createLoadBalancingAlgorithmEntry(
+            "User Store LBA", "UNAVAILABLE", 0, 0, 1);
+    Entry storeAdapterEntry = createStoreAdapterEntry(
+            "UserStoreAdapter", "AVAILABLE");
 
     ds.add(servletEntry);
     ds.add(lbaEntry);
@@ -314,45 +238,13 @@ public class BrokerStatusClientTest
     ds.clear();
     addBaseEntry();
 
-    Entry servletEntry = new Entry("cn=Http Servlet Configuration,cn=monitor");
-    servletEntry.addAttribute("objectClass", "top");
-    servletEntry.addAttribute("objectClass", "ds-monitor-entry");
-    servletEntry.addAttribute("objectClass", "ds-http-servlet-config-monitor-entry");
-    servletEntry.addAttribute("objectClass", "extensibleObject");
-    servletEntry.addAttribute("cn", "Http Servlet Configuration");
-    servletEntry.addAttribute("enabled-servlet-and-path",
-                              "Monitored Servlet https://example.com/monitoredServlet");
-    servletEntry.addAttribute("enabled-servlet-and-path",
-                              "Unmonitored Servlet https://example.com/unmonitoredServlet");
-
-    Entry lbaEntry =
-            new Entry("cn=load-balancing algorithm User Store LBA,cn=monitor");
-    lbaEntry.addAttribute("objectClass", "top");
-    lbaEntry.addAttribute("objectClass", "ds-monitor-entry");
-    lbaEntry.addAttribute("objectClass",
-                          "ds-load-balancing-algorithm-monitor-entry");
-    lbaEntry.addAttribute("objectClass", "extensibleObject");
-    lbaEntry.addAttribute("cn", "load-balancing algorithm User Store LBA");
-    lbaEntry.addAttribute("algorithm-name", "User Store LBA");
-    lbaEntry.addAttribute("config-entry-dn",
-                          "cn=User Store LBA,cn=Load-Balancing Algorithms,cn=config");
-    lbaEntry.addAttribute("health-check-state", "AVAILABLE");
-    lbaEntry.addAttribute("local-servers-health-check-state", "AVAILABLE");
-    lbaEntry.addAttribute("non-local-servers-health-check-state", "AVAILABLE");
-    lbaEntry.addAttribute("ldap-external-server", "example.com:636:AVAILABLE");
-    lbaEntry.addAttribute("num-available-servers", "1");
-    lbaEntry.addAttribute("num-degraded-servers", "0");
-    lbaEntry.addAttribute("num-unavailable-servers", "0");
-
-    Entry storeAdapterEntry =
-            new Entry("cn=Store Adapter UserStoreAdapter,cn=monitor");
-    storeAdapterEntry.addAttribute("objectClass", "top");
-    storeAdapterEntry.addAttribute("objectClass", "ds-monitor-entry");
-    storeAdapterEntry.addAttribute("objectClass", "ds-store-adapter-monitor-entry");
-    storeAdapterEntry.addAttribute("objectClass", "extensibleObject");
-    storeAdapterEntry.addAttribute("cn", "Store Adapter UserStoreAdapter");
-    storeAdapterEntry.addAttribute("store-adapter-name", "UserStoreAdapter");
-    storeAdapterEntry.addAttribute("store-adapter-status", "UNAVAILABLE");
+    Entry servletEntry = createServletEntry(
+            "Monitored Servlet https://example.com/monitoredServlet",
+            "Unmonitored Servlet https://example.com/unmonitoredServlet");
+    Entry lbaEntry = createLoadBalancingAlgorithmEntry(
+            "User Store LBA", "AVAILABLE", 1, 0, 0);
+    Entry storeAdapterEntry = createStoreAdapterEntry(
+            "UserStoreAdapter", "UNAVAILABLE");
 
     ds.add(servletEntry);
     ds.add(lbaEntry);
@@ -393,6 +285,36 @@ public class BrokerStatusClientTest
   }
 
 
+  @Test
+  public void connectionFailureTest() throws Exception
+  {
+    try
+    {
+      LDAPConnectionOptions connectionOptions = new LDAPConnectionOptions();
+      connectionOptions.setConnectTimeoutMillis(5);
+      connectionOptions.setAbandonOnTimeout(true);
+      LDAPConnection connection = ds.getConnection(connectionOptions);
+
+      ds.shutDown(true);
+
+      BrokerStatusClient client =
+              new BrokerStatusClient(connection);
+      BrokerStatus status = client.getStatus();
+      assertFalse(status.isOK());
+      Error error = status.getError();
+      assertNotNull(error);
+      assertNotNull(error.getMessage());
+      assertTrue(error.getMessage().contains("Socket") ||
+                         error.getMessage().contains("connection"),
+                 String.format("unexpected error message: '%s'",
+                               error.getMessage()));
+    }
+    finally
+    {
+      ds.startListening();
+    }
+  }
+
 
   private void addBaseEntry() throws Exception
   {
@@ -402,6 +324,67 @@ public class BrokerStatusClientTest
            "objectClass: ds-general-monitor-entry",
            "objectClass: extensibleObject",
            "cn: monitor");
+  }
+
+
+  private Entry createServletEntry(String... enabledServlets)
+  {
+    Entry entry = new Entry("cn=Http Servlet Configuration,cn=monitor");
+    entry.addAttribute("objectClass", "top");
+    entry.addAttribute("objectClass", "ds-monitor-entry");
+    entry.addAttribute("objectClass", "ds-http-servlet-config-monitor-entry");
+    entry.addAttribute("objectClass", "extensibleObject");
+    entry.addAttribute("cn", "Http Servlet Configuration");
+    for (String enabledServlet : enabledServlets)
+    {
+      entry.addAttribute("enabled-servlet-and-path", enabledServlet);
+    }
+    return entry;
+  }
+
+
+  private Entry createLoadBalancingAlgorithmEntry(
+          String name, String status, int numAvailableServers,
+          int numDegradedServers, int numUnavailableServers)
+  {
+    Entry entry = new Entry(String.format(
+            "cn=load-balancing algorithm %s,cn=monitor", name));
+    entry.addAttribute("objectClass", "top");
+    entry.addAttribute("objectClass", "ds-monitor-entry");
+    entry.addAttribute("objectClass",
+                          "ds-load-balancing-algorithm-monitor-entry");
+    entry.addAttribute("objectClass", "extensibleObject");
+    entry.addAttribute("cn", String.format("load-balancing algorithm %s", name));
+    entry.addAttribute("algorithm-name", name);
+    entry.addAttribute("config-entry-dn", String.format(
+            "cn=%s,cn=Load-Balancing Algorithms,cn=config", name));
+    entry.addAttribute("health-check-state", status);
+    entry.addAttribute("local-servers-health-check-state", status);
+    entry.addAttribute("non-local-servers-health-check-state", status);
+    entry.addAttribute("ldap-external-server",
+                       String.format("example.com:636:%s", status));
+    entry.addAttribute("num-available-servers",
+                       String.valueOf(numAvailableServers));
+    entry.addAttribute("num-degraded-servers",
+                       String.valueOf(numDegradedServers));
+    entry.addAttribute("num-unavailable-servers",
+                       String.valueOf(numUnavailableServers));
+    return entry;
+  }
+
+
+  private Entry createStoreAdapterEntry(String name, String status)
+  {
+    Entry entry =
+            new Entry(String.format("cn=Store Adapter %s,cn=monitor", name));
+    entry.addAttribute("objectClass", "top");
+    entry.addAttribute("objectClass", "ds-monitor-entry");
+    entry.addAttribute("objectClass", "ds-store-adapter-monitor-entry");
+    entry.addAttribute("objectClass", "extensibleObject");
+    entry.addAttribute("cn", String.format("Store Adapter %s", name));
+    entry.addAttribute("store-adapter-name", name);
+    entry.addAttribute("store-adapter-status", status);
+    return entry;
   }
 
 
