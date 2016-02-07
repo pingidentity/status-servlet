@@ -96,7 +96,11 @@ public class BrokerStatusClient
       SearchResultEntry entry = result.getSearchEntries().get(0);
       for (String servletAndPath : entry.getAttributeValues("enabled-servlet-and-path"))
       {
-        enabledServlets.add(parseServletName(servletAndPath));
+        final String parsedServletName = parseServletName(servletAndPath);
+        if (parsedServletName != null)
+        {
+          enabledServlets.add(parsedServletName);
+        }
       }
       for (String servletToCheck : servletsToCheck)
       {
