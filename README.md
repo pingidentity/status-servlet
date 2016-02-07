@@ -7,7 +7,7 @@ used as the health check target for an HTTP load balancer.
 
 Request the servlet at the configured path. 
 For example, *https://server/status*. If the Broker's services are available,
-a 200 OK will be returned. Otherwise, a 500 INTERNAL SERVER ERROR will be 
+a 200 OK will be returned. Otherwise, a 503 SERVICE UNAVAILABLE will be 
 returned.
 
 ## Installation

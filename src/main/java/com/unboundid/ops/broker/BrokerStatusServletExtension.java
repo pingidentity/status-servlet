@@ -51,7 +51,7 @@ public class BrokerStatusServletExtension extends HTTPServletExtension
                     "status servlet (default path '/status') can be used as a " +
                     "health check target for HTTP load balancers. The servlet " +
                     "will return a 200 OK if the Broker's services are " +
-                    "available and a 500 INTERNAL SERVER ERROR if they are not."
+                    "available and a 503 SERVICE UNAVAILABLE if they are not."
     };
   }
 
@@ -67,7 +67,8 @@ public class BrokerStatusServletExtension extends HTTPServletExtension
             "/status"));
     parser.addArgument(new StringArgument(
             null, ARG_MONITORED_SERVLET, false, 0, "{servletName}",
-            "The name of a servlet that is expected to be enabled."));
+            "The name of a servlet that is expected to be enabled. " +
+                    "By default, no servlets are monitored."));
   }
 
 

@@ -20,8 +20,8 @@ import java.io.PrintWriter;
 /**
  * An HTTP servlet that reports the availability status of an UnboundID Data
  * Broker's store adapters, LDAP load balancing algorithms, and HTTP servlets.
- * A 200 OK is returned if the Broker's services are available, and a 500
- * INTERNAL SERVER ERROR is returned otherwise.
+ * A 200 OK is returned if the Broker's services are available, and a 503
+ * SERVICE UNAVAILABLE is returned otherwise.
  *
  * @author Jacob Childress <jacob.childress@unboundid.com>
  */
@@ -78,7 +78,7 @@ public class BrokerStatusServlet extends HttpServlet
       else
       {
         serverContext.debugInfo("Broker status NOT OK");
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
       }
       PrintWriter writer = response.getWriter();
       writer.write(objectMapper.writeValueAsString(status));
