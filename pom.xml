@@ -186,13 +186,6 @@
           </execution>
         </executions>
       </plugin>
-      <!-- Disable tests -->
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
       <!-- install the extension bundle in the local repository -->
       <plugin>
         <artifactId>maven-install-plugin</artifactId>
