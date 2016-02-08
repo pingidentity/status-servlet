@@ -37,18 +37,6 @@
     </resources>
     <plugins>
       <plugin>
-        <groupId>com.unboundid.build</groupId>
-        <artifactId>etah-maven-plugin</artifactId>
-        <version>1.1</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>kill-servers</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <!-- retrieve third-party jars -->
