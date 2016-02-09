@@ -1,7 +1,8 @@
 # broker-status-servlet
 
 This is a status servlet extension for the UnboundID Data Broker. It may be
-used as the health check target for an HTTP load balancer.
+used as the health check target for an HTTP load balancer such as HAProxy or
+Amazon Elastic Load Balancer.
 
 ## Usage
 
@@ -9,6 +10,53 @@ Request the servlet at the configured path.
 For example, *https://server/status*. If the Broker's services are available,
 a 200 OK will be returned. Otherwise, a 503 SERVICE UNAVAILABLE will be 
 returned.
+
+```
+GET /status HTTP/1.1
+Accept: application/json
+Content-Type: application/json; charset=utf-8
+Host: example.com
+
+
+
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Type: application/json
+Server: Jetty(8.1.17.v20150415)
+transfer-encoding: chunked
+
+{
+    "loadBalancingAlgorithms": [
+        {
+            "available": true, 
+            "name": "User Store LBA", 
+            "numAvailableServers": 2, 
+            "numDegradedServers": 0, 
+            "numUnavailableServers": 0
+        }
+    ], 
+    "servlets": [
+        {
+            "enabled": true, 
+            "name": "OAuth"
+        }, 
+        {
+            "enabled": true, 
+            "name": "SCIM2"
+        }, 
+        {
+            "enabled": true, 
+            "name": "UserInfo"
+        }
+    ], 
+    "storeAdapters": [
+        {
+            "available": true, 
+            "name": "UserStoreAdapter"
+        }
+    ]
+}
+```
 
 ## Installation
 
