@@ -56,7 +56,7 @@ public class BrokerStatusServletExtension extends HTTPServletExtension
   {
     return new String[] {
             "This extension provides a status servlet for an UnboundID Data " +
-                    "Broker. It reports status for a store adapters, LDAP store " +
+                    "Broker. It reports status for store adapters, LDAP store " +
                     "adapters, and a configurable set of HTTP servlets. The " +
                     "status servlet (default path '/status') can be used as a " +
                     "health check target for HTTP load balancers. The servlet " +
