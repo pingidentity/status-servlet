@@ -1,290 +1,293 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <artifactId>parent</artifactId>
-    <groupId>com.unboundid.build</groupId>
-    <version>1.0.0</version>
-  </parent>
-  <groupId>com.unboundid.qa.serversdk</groupId>
+  <groupId>com.unboundid.ops.broker</groupId>
   <artifactId>broker-status-servlet</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>UnboundID Data Broker Status Servlet</name>
+  <packaging>jar</packaging>
+
+  <name>broker-status-servlet</name>
+  <description>Reports Broker service status in machine-readable form.</description>
+  <organization>
+    <name>UnboundID</name>
+    <url>https://unboundid.com</url>
+  </organization>
 
   <properties>
-    <compileSource>1.7</compileSource>
+    <!--
+    The following properties will be used during the course of building one or
+    more extensions for UnboundID server products. If multiple extensions will
+    be packaged into the same jar file, then these property values should refer
+    to the collection rather than individual extensions.
+    -->
 
-    <server-version>5.2.0.0</server-version>
-    <version-qualifier>-GA</version-qualifier>
-    <server-instance-version>${server-version}${version-qualifier}</server-instance-version>
-    <server-sdk-version>${server-version}</server-sdk-version>
+    <!--
+    The Java compiler source and target versions for this project.
+    -->
+    <source.version>1.7</source.version>
+    <target.version>1.7</target.version>
 
-    <server-sdk-dir>${project.build.directory}/unboundid-server-sdk-${server-sdk-version}</server-sdk-dir>
-    <vendor-id>com.unboundid</vendor-id>
-    <extension-file>${server-sdk-dir}/build/${vendor-id}.${project.artifactId}-${project.version}.zip</extension-file>
-    <third-party-libs-dir>${project.build.directory}/third-party-libs</third-party-libs-dir>
+    <!--
+    The Server SDK version for which this extension will be built.
+
+    EXAMPLE:  <server-sdk.version>5.2.0.0</server-sdk.version>
+    -->
+    <server-sdk.version>5.2.0.0</server-sdk.version>
+
+    <!--
+    The Maven version string of the Server SDK dependency to build against.
+
+    EXAMPLE:  <server-sdk.maven-version>5.3.0.0-SNAPSHOT</server-sdk.maven-version>
+    -->
+    <server-sdk.maven-version>${server-sdk.version}</server-sdk.maven-version>
+
+    <!--
+    The name for this extension or set of extensions. It must begin with an
+    ASCII alphabetic character and must contain only ASCII alphabetic
+    characters, numeric digits, the period, and the dash.
+
+    EXAMPLE:  extension.name=user-extension
+    -->
+    <extension.name>${project.name}</extension.name>
+
+    <!--
+    The version string for this extension or set of extensions. It must begin
+    with an ASCII alphabetic character or numeric digit and must contain only
+    ASCII alphabetic characters, numeric digits, the period, and the dash.
+
+    EXAMPLE:  extension.version=1.0
+    -->
+    <extension.version>${project.version}</extension.version>
+
+    <!--
+    The name of the vendor for this extension or set of extensions. It must be
+    provided, but may contain any non-empty set of characters.
+
+    EXAMPLE:  <extension.vendor.name>Example Corp.</extension.vendor.name>
+    -->
+    <extension.vendor.name>${project.organization.name}</extension.vendor.name>
+
+    <!--
+    The unique ID of the vendor for this extension or set of extensions. It
+    must be provided and should use a notation similar to that of Java packages.
+
+    EXAMPLE:  <extension.vendor.id>com.example</extension.vendor.id>
+    -->
+    <extension.vendor.id>${project.groupId}</extension.vendor.id>
+
+    <!--
+    The URL of the vendor for this extension or set of extensions. It must be
+    provided and should be a valid URL.
+
+    EXAMPLE:  extension.vendor.url=http://www.example.com/
+    -->
+    <extension.vendor.url>${project.organization.url}</extension.vendor.url>
+
+    <!--
+    Contact information (e.g., e-mail address, phone number, URL, etc.) for the
+    individual or group responsible for supporting this extension. It must be
+    provided, but may contain any non-empty set of characters.
+
+    EXAMPLE:  extension.vendor.contact=support@example.com
+    -->
+    <extension.vendor.contact>jacob.childress@unboundid.com</extension.vendor.contact>
+
+    <!--
+    Indicates whether to include the extension source code in the jar file along
+    with the compiled classes.  Including source code can help ensure that the
+    code is always available to those who might need to support the extension.
+    It must be provided, and the value should be either "true" or "false".
+    -->
+    <include.source>true</include.source>
+
+    <!--
+    Used to set the Build-Time value in the jar manifest.
+    -->
+    <maven.build.timestamp.format>yyyyMMddHHmmss'Z'</maven.build.timestamp.format>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <jackson-version>2.5.0</jackson-version>
   </properties>
 
   <build>
-    <!-- enable resource filtering -->
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.5.1</version>
+        <configuration>
+          <source>${source.version}</source>
+          <target>${target.version}</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.4.1</version>
         <executions>
-          <!-- retrieve third-party jars -->
           <execution>
-            <id>copy</id>
-            <phase>process-resources</phase>
+            <id>enforce-property</id>
             <goals>
-              <goal>copy</goal>
+              <goal>enforce</goal>
             </goals>
             <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>com.fasterxml.jackson.core</groupId>
-                  <artifactId>jackson-core</artifactId>
-                  <version>${jackson-version}</version>
-                  <type>jar</type>
-                  <outputDirectory>${third-party-libs-dir}</outputDirectory>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>com.fasterxml.jackson.core</groupId>
-                  <artifactId>jackson-databind</artifactId>
-                  <version>${jackson-version}</version>
-                  <type>jar</type>
-                  <outputDirectory>${third-party-libs-dir}</outputDirectory>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>com.fasterxml.jackson.core</groupId>
-                  <artifactId>jackson-annotations</artifactId>
-                  <version>${jackson-version}</version>
-                  <type>jar</type>
-                  <outputDirectory>${third-party-libs-dir}</outputDirectory>
-                </artifactItem>
-              </artifactItems>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <overWriteSnapshots>true</overWriteSnapshots>
-            </configuration>
-          </execution>
-          <!-- unpack the Server SDK for building the extension -->
-          <execution>
-            <id>unpack</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>com.unboundid.product.ds</groupId>
-                  <artifactId>server-sdk</artifactId>
-                  <version>${server-sdk-version}${version-qualifier}</version>
-                  <classifier>image</classifier>
-                  <type>zip</type>
-                  <outputDirectory>${project.build.directory}</outputDirectory>
-                </artifactItem>
-              </artifactItems>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <overWriteSnapshots>true</overWriteSnapshots>
+              <rules>
+                <requireProperty>
+                  <property>extension.name</property>
+                  <message>You must set an extension.name property.</message>
+                  <regex>[a-zA-Z]([a-zA-Z0-9\.\-])*</regex>
+                  <regexMessage>The extension.name property must begin with an ASCII alphabetic character and must contain only ASCII alphabetic characters, numeric digits, the period, and the dash.</regexMessage>
+                </requireProperty>
+                <requireProperty>
+                  <property>extension.version</property>
+                  <message>You must set an extension.version property.</message>
+                  <regex>[a-zA-Z0-9]([a-zA-Z0-9\.\-])*</regex>
+                  <regexMessage>The extension.version property must begin with an ASCII alphabetic character or numeric digit and must contain only ASCII alphabetic characters, numeric digits, the period, and the dash.</regexMessage>
+                </requireProperty>
+                <requireProperty>
+                  <property>extension.vendor.name</property>
+                  <message>You must set an extension.vendor.name property.</message>
+                </requireProperty>
+                <requireProperty>
+                  <property>extension.vendor.id</property>
+                  <message>You must set an extension.vendor.id property.</message>
+                  <regex>([a-zA-Z_$][a-zA-Z\d_$]*\.)*[a-zA-Z_$][a-zA-Z\d_$]*</regex>
+                  <regexMessage>The extension.vendor.id property must must be provided and should use a notation similar to that of Java packages.</regexMessage>
+                </requireProperty>
+                <requireProperty>
+                  <property>extension.vendor.url</property>
+                  <message>You must set an extension.vendor.url property.</message>
+                </requireProperty>
+                <requireProperty>
+                  <property>extension.vendor.contact</property>
+                  <message>You must set an extension.vendor.contact property.</message>
+                </requireProperty>
+                <requireProperty>
+                  <property>include.source</property>
+                  <message>You must set an include.source property.</message>
+                  <regex>(true|false)</regex>
+                  <regexMessage>The include.source property must have a value of either 'true' or 'false'.</regexMessage>
+                </requireProperty>
+              </rules>
             </configuration>
           </execution>
         </executions>
       </plugin>
       <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>2.6</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.3</version>
         <configuration>
-          <overwrite>true</overwrite>
+          <outputDirectory>${project.build.directory}/javadoc</outputDirectory>
+          <linksource>${include.source}</linksource>
+          <show>protected</show>
         </configuration>
         <executions>
-          <!-- copy the source code and extension.properties to the server SDK root -->
           <execution>
-            <id>copy-src</id>
-            <phase>prepare-package</phase>
+            <id>attach-javadocs</id>
             <goals>
-              <goal>copy-resources</goal>
+              <goal>jar</goal>
             </goals>
-            <configuration>
-              <outputDirectory>${server-sdk-dir}/src</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>src/main/java</directory>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-extension-properties</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${server-sdk-dir}</outputDirectory>
-            </configuration>
-          </execution>
-          <!-- copy the third-party libraries to the server SDK 'lib' directory -->
-          <execution>
-            <id>copy-libs</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${server-sdk-dir}/lib</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${third-party-libs-dir}</directory>
-                  <includes>
-                    <include>*.jar</include>
-                  </includes>
-                </resource>
-              </resources>
-            </configuration>
           </execution>
         </executions>
       </plugin>
-      <!-- use Ant to build the Server SDK extension -->
       <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.7</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.6</version>
+        <configuration>
+          <archive>
+            <addMavenDescriptor>false</addMavenDescriptor>
+            <index>true</index>
+            <manifest>
+              <addClasspath>false</addClasspath>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+            </manifest>
+            <manifestEntries>
+              <Build-Time>${maven.build.timestamp}</Build-Time>
+              <Extension-Support-Contact>${extension.vendor.contact}</Extension-Support-Contact>
+              <UnboundID-Server-SDK-Version>${server-sdk.version}</UnboundID-Server-SDK-Version>
+            </manifestEntries>
+          </archive>
+          <excludes>
+            <exclude>velocity/</exclude>
+            <exclude>velocity/*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.unboundid.sdk</groupId>
+        <artifactId>unboundid-server-sdk-docs-maven-plugin</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <configuration>
+          <!-- The following configuration may be customized, if needed. -->
+          <velocityResourceLoaderPath>${project.basedir}/src/main/resources/velocity</velocityResourceLoaderPath>
+          <indexTemplate>index.html.vm</indexTemplate>
+          <extensionTemplate>extension.html.vm</extensionTemplate>
+        </configuration>
+        <dependencies>
+          <!-- This adds the Server SDK extension(s) to the plugin's classpath
+          so that it can process arguments, example usages, etc. -->
+          <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>${project.artifactId}</artifactId>
+            <version>${project.version}</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
-            <id>package-extension</id>
             <phase>package</phase>
             <goals>
-              <goal>run</goal>
+              <goal>build-server-sdk-docs</goal>
             </goals>
-            <configuration>
-              <target>
-                <!-- override the JDK version set by the Ant build.xml -->
-                <property name="sourceVersion" value="${compileSource}"/>
-                <property name="targetVersion" value="${compileSource}"/>
-                <ant dir="${server-sdk-dir}" />
-              </target>
-            </configuration>
           </execution>
         </executions>
       </plugin>
-      <!-- install the extension bundle in the local repository -->
       <plugin>
-        <artifactId>maven-install-plugin</artifactId>
-        <version>2.4</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2-beta-5</version>
         <executions>
           <execution>
-            <phase>install</phase>
+            <id>create-zip-archive</id>
+            <phase>package</phase>
             <goals>
-              <goal>install-file</goal>
+              <goal>single</goal>
             </goals>
             <configuration>
-              <groupId>${project.groupId}</groupId>
-              <artifactId>${project.artifactId}</artifactId>
-              <version>${project.version}</version>
-              <classifier>image</classifier>
-              <packaging>zip</packaging>
-              <file>${extension-file}</file>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <!-- deploy the extension bundle -->
-      <plugin>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>deploy</phase>
-            <goals>
-              <goal>deploy-file</goal>
-            </goals>
-            <configuration>
-              <groupId>${project.groupId}</groupId>
-              <artifactId>${project.artifactId}</artifactId>
-              <version>${project.version}</version>
-              <classifier>image</classifier>
-              <packaging>zip</packaging>
-              <generatePom>true</generatePom>
-              <repositoryId>${project.distributionManagement.snapshotRepository.id}</repositoryId>
-              <url>${project.distributionManagement.snapshotRepository.url}</url>
-              <file>${extension-file}</file>
+              <descriptors>
+                <descriptor>src/main/assembly/assembly.xml</descriptor>
+              </descriptors>
+              <finalName>${extension.vendor.id}.${extension.name}-${project.version}</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
             </configuration>
           </execution>
         </executions>
       </plugin>
     </plugins>
-
-    <pluginManagement>
-      <plugins>
-        <!--
-          This plugin's configuration is used to store Eclipse m2e settings only.
-          It has no influence on the Maven build itself.
-        -->
-        <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <versionRange>[2.6,)</versionRange>
-                    <goals>
-                      <goal>copy-resources</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore />
-                  </action>
-                </pluginExecution>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <versionRange>[2.4,)</versionRange>
-                    <goals>
-                      <goal>unpack</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore />
-                  </action>
-                </pluginExecution>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <versionRange>[1.6,)</versionRange>
-                    <goals>
-                      <goal>run</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore />
-                  </action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
   </build>
 
   <dependencies>
     <dependency>
       <groupId>com.unboundid.product.ds</groupId>
       <artifactId>server-sdk</artifactId>
-      <version>${server-sdk-version}</version>
+      <version>${server-sdk.maven-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -301,5 +304,12 @@
       <artifactId>jackson-annotations</artifactId>
       <version>${jackson-version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>6.4</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
+
 </project>
