@@ -87,7 +87,9 @@ public class BrokerStatusServlet extends HttpServlet
       }
       else
       {
-        serverContext.debugInfo("Broker status NOT OK");
+        // TODO: Log details when status includes errors.
+        // Note that the Broker will log ample detail itself.
+        serverContext.debugWarning("Broker status NOT OK");
         response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
       }
       PrintWriter writer = response.getWriter();
