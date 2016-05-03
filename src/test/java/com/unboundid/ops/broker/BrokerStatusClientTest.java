@@ -22,7 +22,7 @@ import com.unboundid.ldap.sdk.LDAPConnection;
 import com.unboundid.ldap.sdk.LDAPConnectionOptions;
 import com.unboundid.ldap.sdk.schema.Schema;
 import com.unboundid.ops.broker.models.*;
-import com.unboundid.ops.broker.models.Error;
+import com.unboundid.ops.broker.models.StatusError;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -311,7 +311,7 @@ public class BrokerStatusClientTest
               new BrokerStatusClient(connection);
       BrokerStatus status = client.getStatus();
       assertFalse(status.isOK());
-      Error error = status.getError();
+      StatusError error = status.getError();
       assertNotNull(error);
       assertNotNull(error.getMessage());
       assertTrue(error.getMessage().contains("Socket") ||

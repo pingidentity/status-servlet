@@ -22,7 +22,7 @@ import com.unboundid.ldap.sdk.SearchResult;
 import com.unboundid.ldap.sdk.SearchResultEntry;
 import com.unboundid.ldap.sdk.SearchScope;
 import com.unboundid.ops.broker.models.BrokerStatus;
-import com.unboundid.ops.broker.models.Error;
+import com.unboundid.ops.broker.models.StatusError;
 import com.unboundid.ops.broker.models.LoadBalancingAlgorithmStatus;
 import com.unboundid.ops.broker.models.ServletStatus;
 import com.unboundid.ops.broker.models.StoreAdapterStatus;
@@ -83,7 +83,7 @@ public class BrokerStatusClient
     }
     catch (Exception e)
     {
-      return BrokerStatus.create(new Error(e));
+      return BrokerStatus.create(new StatusError(e));
     }
   }
 

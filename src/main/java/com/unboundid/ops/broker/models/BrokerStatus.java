@@ -33,7 +33,7 @@ public class BrokerStatus
   private List<ServletStatus> servletStatuses = new ArrayList<>();
   private List<StoreAdapterStatus> storeAdapterStatuses = new ArrayList<>();
   private List<LoadBalancingAlgorithmStatus> lbaStatuses = new ArrayList<>();
-  private Error error;
+  private StatusError error;
 
 
   private BrokerStatus()
@@ -72,7 +72,7 @@ public class BrokerStatus
    *          An error status.
    * @return A status instance.
    */
-  public static BrokerStatus create(Error error)
+  public static BrokerStatus create(StatusError error)
   {
     BrokerStatus status = new BrokerStatus();
     status.error = error;
@@ -122,7 +122,7 @@ public class BrokerStatus
    * @return The error status.
    */
   @JsonProperty("error")
-  public Error getError()
+  public StatusError getError()
   {
     return error;
   }

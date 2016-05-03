@@ -20,7 +20,7 @@ package com.unboundid.ops.broker.models;
  *
  * @author Jacob Childress <jacob.childress@unboundid.com>
  */
-public class Error
+public class StatusError
 {
   private final Throwable cause;
   private final String message;
@@ -32,7 +32,7 @@ public class Error
    * @param throwable
    *          The {@link Throwable} that this object represents.
    */
-  public Error(Throwable throwable)
+  public StatusError(Throwable throwable)
   {
     this.cause = throwable;
     this.message = throwable.getMessage();
@@ -68,7 +68,7 @@ public class Error
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    Error error = (Error) o;
+    StatusError error = (StatusError) o;
 
     return message.equals(error.message);
   }
