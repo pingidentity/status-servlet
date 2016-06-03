@@ -83,6 +83,12 @@ dsconfig set-connection-handler-prop --handler-name "HTTPS Connection Handler" \
   --set enabled:true
 ```
 
+## Support and reporting bugs
+
+This is an unsupported example, but support will be provided on a best-effort basis.
+
+Please report issues using the project's [issue tracker](https://github.com/UnboundID/broker-status-servlet/issues).
+
 ## License
 
 This is licensed under the Apache License 2.0.
