@@ -14,7 +14,31 @@
     <url>https://unboundid.com</url>
   </organization>
 
+  <scm>
+    <connection>scm:git:git@github.com:UnboundID/broker-status-servlet.git</connection>
+  </scm>
+
+  <profiles>
+    <profile>
+      <id>UnboundID</id>
+      <distributionManagement>
+        <repository>
+          <id>releases</id>
+          <name>Engineering Releases Repo</name>
+          <url>${releaseRepoUrl}</url>
+        </repository>
+        <snapshotRepository>
+          <id>snapshots</id>
+          <name>Engineering Snapshots Repo</name>
+          <url>${snapshotRepoUrl}</url>
+        </snapshotRepository>
+      </distributionManagement>
+    </profile>
+  </profiles>
+
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
     <!--
     The following properties will be used during the course of building one or
     more extensions for UnboundID server products. If multiple extensions will
