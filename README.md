@@ -7,11 +7,11 @@ Amazon Elastic Load Balancer.
 ## Usage
 
 Request the servlet at the configured path. 
-For example, *https://server/status*. If the Broker's services are available,
+For example, `https://server/status`. If the Broker's services are available,
 a 200 OK will be returned. Otherwise, a 503 SERVICE UNAVAILABLE will be 
 returned.
 
-```
+```http
 GET /status HTTP/1.1
 Accept: application/json
 Content-Type: application/json; charset=utf-8
