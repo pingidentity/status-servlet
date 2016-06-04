@@ -63,7 +63,7 @@ transfer-encoding: chunked
 First, install the extension bundle.
 
 ```
-manage-extension --update com.unboundid.broker-status-servlet-1.0-SNAPSHOT.zip
+manage-extension --install com.unboundid.broker-status-servlet-1.0-SNAPSHOT.zip
 ```
 
 Then configure the extension, assign it to an HTTPS connection handler and 
