@@ -20,10 +20,9 @@ Host: example.com
 
 
 HTTP/1.1 200 OK
-Connection: keep-alive
 Content-Type: application/json
-Server: Jetty(8.1.17.v20150415)
-transfer-encoding: chunked
+Date: Sun, 05 Jun 2016 03:59:14 GMT
+Transfer-Encoding: chunked
 
 {
     "loadBalancingAlgorithms": [
@@ -38,15 +37,23 @@ transfer-encoding: chunked
     "servlets": [
         {
             "enabled": true, 
-            "name": "OAuth"
-        }, 
-        {
-            "enabled": true, 
             "name": "SCIM2"
         }, 
         {
             "enabled": true, 
             "name": "UserInfo"
+        }, 
+        {
+            "enabled": true, 
+            "name": "JWKS"
+        }, 
+        {
+            "enabled": true, 
+            "name": "Session"
+        }, 
+        {
+            "enabled": true, 
+            "name": "OAuth2"
         }
     ], 
     "storeAdapters": [
@@ -74,9 +81,11 @@ dsconfig create-http-servlet-extension --extension-name Status \
   --type third-party --set "description:Reports Broker service availability" \
   --set extension-class:com.unboundid.ops.broker.BrokerStatusServletExtension \
   --set extension-argument:path=/status \
-  --set extension-argument:monitored-servlet=OAuth \
+  --set extension-argument:monitored-servlet=OAuth2 \
   --set extension-argument:monitored-servlet=SCIM2 \
-  --set extension-argument:monitored-servlet=UserInfo
+  --set extension-argument:monitored-servlet=UserInfo \
+  --set extension-argument:monitored-servlet=JWKS \
+  --set extension-argument:monitored-servlet=Session
 dsconfig set-connection-handler-prop --handler-name "HTTPS Connection Handler" \
   --set enabled:false --add http-servlet-extension:Status
 dsconfig set-connection-handler-prop --handler-name "HTTPS Connection Handler" \
