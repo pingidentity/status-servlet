@@ -49,7 +49,7 @@ Transfer-Encoding: chunked
         }, 
         {
             "enabled": true, 
-            "name": "Session"
+            "name": "Authentication"
         }, 
         {
             "enabled": true, 
@@ -85,7 +85,7 @@ dsconfig create-http-servlet-extension --extension-name Status \
   --set extension-argument:monitored-servlet=SCIM2 \
   --set extension-argument:monitored-servlet=UserInfo \
   --set extension-argument:monitored-servlet=JWKS \
-  --set extension-argument:monitored-servlet=Session
+  --set extension-argument:monitored-servlet=Authentication
 dsconfig set-connection-handler-prop --handler-name "HTTPS Connection Handler" \
   --set enabled:false --add http-servlet-extension:Status
 dsconfig set-connection-handler-prop --handler-name "HTTPS Connection Handler" \
