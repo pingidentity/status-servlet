@@ -257,7 +257,7 @@
       <plugin>
         <groupId>com.unboundid.sdk</groupId>
         <artifactId>unboundid-server-sdk-docs-maven-plugin</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.2</version>
         <configuration>
           <!-- The following configuration may be customized, if needed. -->
           <velocityResourceLoaderPath>${project.basedir}/src/main/resources/velocity</velocityResourceLoaderPath>
@@ -311,7 +311,6 @@
       <groupId>com.unboundid</groupId>
       <artifactId>server-sdk</artifactId>
       <version>${server-sdk.maven-version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
