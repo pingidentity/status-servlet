@@ -308,7 +308,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.unboundid.product.ds</groupId>
+      <groupId>com.unboundid</groupId>
       <artifactId>server-sdk</artifactId>
       <version>${server-sdk.maven-version}</version>
       <scope>provided</scope>
