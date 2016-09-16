@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.unboundid.ops.broker.models;
+package com.unboundid.ops.models;
 
 /**
  * LDAP load balancing algorithm status. This provides availability status for
  * external LDAP directory servers.
  *
- * @author Jacob Childress <jacob.childress@unboundid.com>
+ * @author Jacob Childress
  */
 public class LoadBalancingAlgorithmStatus
 {

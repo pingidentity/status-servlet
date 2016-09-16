@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.unboundid.ops.broker;
+package com.unboundid.ops;
 
 import com.unboundid.ldap.listener.InMemoryDirectoryServer;
 import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
@@ -21,8 +21,11 @@ import com.unboundid.ldap.sdk.Entry;
 import com.unboundid.ldap.sdk.LDAPConnection;
 import com.unboundid.ldap.sdk.LDAPConnectionOptions;
 import com.unboundid.ldap.sdk.schema.Schema;
-import com.unboundid.ops.broker.models.*;
-import com.unboundid.ops.broker.models.StatusError;
+import com.unboundid.ops.models.Status;
+import com.unboundid.ops.models.LoadBalancingAlgorithmStatus;
+import com.unboundid.ops.models.ServletStatus;
+import com.unboundid.ops.models.StatusError;
+import com.unboundid.ops.models.StoreAdapterStatus;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -37,11 +40,11 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 /**
- * Tests for {@link BrokerStatusClient}.
+ * Tests for {@link StatusClient}.
  *
  * @author jacobc
  */
-public class BrokerStatusClientTest
+public class StatusClientTest
 {
   private static final String BASE_DN = "dc=example,dc=com";
 
@@ -50,8 +53,6 @@ public class BrokerStatusClientTest
 
   /**
    * Starts an in-memory DS.
-   *
-   * @throws Exception
    */
   @BeforeClass
   public void setup() throws Exception
@@ -82,7 +83,7 @@ public class BrokerStatusClientTest
 
 
   @Test
-  public void brokerOkTest() throws Exception
+  public void serverOkTest() throws Exception
   {
     ds.clear();
     addBaseEntry();
@@ -102,9 +103,9 @@ public class BrokerStatusClientTest
     LDAPConnection connection = ds.getConnection();
     try
     {
-      BrokerStatusClient client =
-              new BrokerStatusClient(connection, "Monitored Servlet");
-      BrokerStatus status = client.getStatus();
+      StatusClient client =
+              new StatusClient(connection, "Monitored Servlet");
+      Status status = client.getStatus();
       assertTrue(status.isOK());
 
       List<ServletStatus> servletStatusList = status.getServletStatuses();
@@ -157,9 +158,9 @@ public class BrokerStatusClientTest
     LDAPConnection connection = ds.getConnection();
     try
     {
-      BrokerStatusClient client =
-              new BrokerStatusClient(connection, "Monitored Servlet");
-      BrokerStatus status = client.getStatus();
+      StatusClient client =
+              new StatusClient(connection, "Monitored Servlet");
+      Status status = client.getStatus();
       assertFalse(status.isOK());
 
       List<ServletStatus> servletStatusList = status.getServletStatuses();
@@ -210,9 +211,9 @@ public class BrokerStatusClientTest
     LDAPConnection connection = ds.getConnection();
     try
     {
-      BrokerStatusClient client =
-              new BrokerStatusClient(connection, "Monitored Servlet");
-      BrokerStatus status = client.getStatus();
+      StatusClient client =
+              new StatusClient(connection, "Monitored Servlet");
+      Status status = client.getStatus();
       assertFalse(status.isOK());
 
       List<ServletStatus> servletStatusList = status.getServletStatuses();
@@ -263,9 +264,9 @@ public class BrokerStatusClientTest
     LDAPConnection connection = ds.getConnection();
     try
     {
-      BrokerStatusClient client =
-              new BrokerStatusClient(connection, "Monitored Servlet");
-      BrokerStatus status = client.getStatus();
+      StatusClient client =
+              new StatusClient(connection, "Monitored Servlet");
+      Status status = client.getStatus();
       assertFalse(status.isOK());
 
       List<ServletStatus> servletStatusList = status.getServletStatuses();
@@ -307,9 +308,9 @@ public class BrokerStatusClientTest
 
       ds.shutDown(true);
 
-      BrokerStatusClient client =
-              new BrokerStatusClient(connection);
-      BrokerStatus status = client.getStatus();
+      StatusClient client =
+              new StatusClient(connection);
+      Status status = client.getStatus();
       assertFalse(status.isOK());
       StatusError error = status.getError();
       assertNotNull(error);

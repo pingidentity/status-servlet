@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.unboundid.ops.broker.models;
+package com.unboundid.ops.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -23,12 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Reports availability information for an UnboundID Data Broker.
+ * Reports availability information for a server.
  *
- * @author Jacob Childress <jacob.childress@unboundid.com>
+ * @author Jacob Childress
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BrokerStatus
+public class Status
 {
   private List<ServletStatus> servletStatuses = new ArrayList<>();
   private List<StoreAdapterStatus> storeAdapterStatuses = new ArrayList<>();
@@ -36,14 +36,14 @@ public class BrokerStatus
   private StatusError error;
 
 
-  private BrokerStatus()
+  private Status()
   {
     // Private constructor. No implementation.
   }
 
 
   /**
-   * Creates a status instance for a Broker that is available.
+   * Creates a status instance for a server that is available.
    *
    * @param servletStatuses
    *          HTTP servlet statuses.
@@ -53,11 +53,11 @@ public class BrokerStatus
    *          LDAP load balancing algorithm statuses.
    * @return A status instance.
    */
-  public static BrokerStatus create(List<ServletStatus> servletStatuses,
-                                    List<StoreAdapterStatus> storeAdapterStatuses,
-                                    List<LoadBalancingAlgorithmStatus> lbaStatuses)
+  public static Status create(List<ServletStatus> servletStatuses,
+                              List<StoreAdapterStatus> storeAdapterStatuses,
+                              List<LoadBalancingAlgorithmStatus> lbaStatuses)
   {
-    BrokerStatus status = new BrokerStatus();
+    Status status = new Status();
     status.servletStatuses = servletStatuses;
     status.storeAdapterStatuses = storeAdapterStatuses;
     status.lbaStatuses = lbaStatuses;
@@ -66,15 +66,15 @@ public class BrokerStatus
 
 
   /**
-   * Creates a status instance for a Broker that is unavailable.
+   * Creates a status instance for a server that is unavailable.
    *
    * @param error
    *          An error status.
    * @return A status instance.
    */
-  public static BrokerStatus create(StatusError error)
+  public static Status create(StatusError error)
   {
-    BrokerStatus status = new BrokerStatus();
+    Status status = new Status();
     status.error = error;
     return status;
   }
@@ -129,10 +129,10 @@ public class BrokerStatus
 
 
   /**
-   * Returns whether or not this status instance represents an available Broker
-   * or an unavailable Broker.
+   * Returns whether or not this status instance represents an available server
+   * or an unavailable server.
    *
-   * @return True if the Broker is available; otherwise, false.
+   * @return True if the server is available; otherwise, false.
    */
   @JsonIgnore
   public boolean isOK()
@@ -174,7 +174,7 @@ public class BrokerStatus
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    BrokerStatus that = (BrokerStatus) o;
+    Status that = (Status) o;
 
     return !(servletStatuses != null ?
             !servletStatuses.equals(that.servletStatuses) :

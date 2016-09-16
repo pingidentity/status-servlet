@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.unboundid.ops.broker;
+package com.unboundid.ops;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unboundid.directory.sdk.http.types.HTTPServerContext;
 import com.unboundid.ldap.sdk.LDAPInterface;
-import com.unboundid.ops.broker.models.BrokerStatus;
+import com.unboundid.ops.models.Status;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -28,14 +28,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
- * An HTTP servlet that reports the availability status of an UnboundID Data
- * Broker's store adapters, LDAP load balancing algorithms, and HTTP servlets.
- * A 200 OK is returned if the Broker's services are available, and a 503
- * SERVICE UNAVAILABLE is returned otherwise.
+ * An HTTP servlet that reports the availability status of server's store
+ * adapters, LDAP load balancing algorithms, and HTTP servlets. A 200 OK is
+ * returned if the server's services are available, and a 503 SERVICE
+ * UNAVAILABLE is returned otherwise.
  *
- * @author Jacob Childress <jacob.childress@unboundid.com>
+ * @author Jacob Childress
  */
-public class BrokerStatusServlet extends HttpServlet
+public class StatusServlet extends HttpServlet
 {
   private static final long serialVersionUID = 4544150159114076878L;
   private static ObjectMapper objectMapper = new ObjectMapper();
@@ -53,12 +53,12 @@ public class BrokerStatusServlet extends HttpServlet
    * @param connection
    *          An LDAP connection interface.
    * @param servletsToCheck
-   *          The HTTP servlets that must be enabled for the Data Broker to be
+   *          The HTTP servlets that must be enabled for the server to be
    *          considered available.
    */
-  public BrokerStatusServlet(HTTPServerContext serverContext,
-                             LDAPInterface connection,
-                             String... servletsToCheck)
+  public StatusServlet(HTTPServerContext serverContext,
+                       LDAPInterface connection,
+                       String... servletsToCheck)
   {
     this.serverContext = serverContext;
     this.connection = connection;
@@ -74,22 +74,22 @@ public class BrokerStatusServlet extends HttpServlet
     serverContext.debugVerbose("START: GET request");
     try
     {
-      serverContext.debugVerbose("Initializing BrokerStatusClient");
-      BrokerStatusClient client =
-              new BrokerStatusClient(connection, servletsToCheck);
+      serverContext.debugVerbose("Initializing StatusClient");
+      StatusClient client =
+              new StatusClient(connection, servletsToCheck);
       serverContext.debugVerbose("Retrieving status");
-      BrokerStatus status = client.getStatus();
+      Status status = client.getStatus();
       response.setContentType("application/json");
       if (status.isOK())
       {
-        serverContext.debugInfo("Broker status OK");
+        serverContext.debugInfo("Server status OK");
         response.setStatus(HttpServletResponse.SC_OK);
       }
       else
       {
         // TODO: Log details when status includes errors.
-        // Note that the Broker will log ample detail itself.
-        serverContext.debugWarning("Broker status NOT OK");
+        // Note that the server will log ample detail itself.
+        serverContext.debugWarning("Server status NOT OK");
         response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
       }
       PrintWriter writer = response.getWriter();

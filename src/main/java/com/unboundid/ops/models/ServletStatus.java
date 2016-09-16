@@ -13,38 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.unboundid.ops.broker.models;
+package com.unboundid.ops.models;
 
 /**
- * Store adapter status.
+ * The status of an HTTP servlet.
  *
- * @author Jacob Childress <jacob.childress@unboundid.com>
+ * @author Jacob Childress
  */
-public class StoreAdapterStatus
+public class ServletStatus
 {
   private final String name;
-  private final boolean available;
+  private final boolean enabled;
 
 
   /**
-   * Constructs a store adapter status instance.
+   * Constructs an HTTP servlet status instance.
    *
    * @param name
-   *          The store adapter name.
-   * @param available
-   *          Whether or not the store adapter is available.
+   *          The HTTP servlet name.
+   * @param enabled
+   *          Whether or not the HTTP servlet is enabled.
    */
-  public StoreAdapterStatus(String name, boolean available)
+  public ServletStatus(String name, boolean enabled)
   {
     this.name = name;
-    this.available = available;
+    this.enabled = enabled;
   }
 
 
   /**
-   * Gets the store adapter name.
+   * Gets the HTTP servlet name.
    *
-   * @return The store adapter name.
+   * @return The HTTP servlet name.
    */
   public String getName()
   {
@@ -53,13 +53,13 @@ public class StoreAdapterStatus
 
 
   /**
-   * Whether or not the store adapter is available.
+   * Whether or not the HTTP servlet is enabled.
    *
-   * @return The store adapter availability.
+   * @return The enabled state of the HTTP servlet.
    */
-  public boolean isAvailable()
+  public boolean isEnabled()
   {
-    return available;
+    return enabled;
   }
 
 
@@ -70,9 +70,9 @@ public class StoreAdapterStatus
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    StoreAdapterStatus that = (StoreAdapterStatus) o;
+    ServletStatus that = (ServletStatus) o;
 
-    return available == that.available && name.equals(that.name);
+    return enabled == that.enabled && name.equals(that.name);
   }
 
 
@@ -81,7 +81,7 @@ public class StoreAdapterStatus
   public int hashCode()
   {
     int result = name.hashCode();
-    result = 31 * result + (available ? 1 : 0);
+    result = 31 * result + (enabled ? 1 : 0);
     return result;
   }
 }

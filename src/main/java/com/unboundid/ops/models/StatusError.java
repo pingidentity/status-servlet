@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.unboundid.ops.broker.models;
+package com.unboundid.ops.models;
 
 /**
- * A Broker status error.
+ * A status error.
  *
- * @author Jacob Childress <jacob.childress@unboundid.com>
+ * @author Jacob Childress
  */
 public class StatusError
 {

@@ -1,15 +1,15 @@
-# broker-status-servlet
+# status-servlet
 
-This is a status servlet extension for the UnboundID Data Broker. It may be
+This is a status servlet extension for the Data Governance Server. It may be
 used as the health check target for an HTTP load balancer such as HAProxy or
 Amazon Elastic Load Balancer.
 
 ## Usage
 
 Request the servlet at the configured path. 
-For example, `https://server/status`. If the Broker's services are available,
-a 200 OK will be returned. Otherwise, a 503 SERVICE UNAVAILABLE will be 
-returned.
+For example, `https://server/status`. If the Data Governance Server's services
+are available, a 200 OK will be returned. Otherwise, a 503 SERVICE UNAVAILABLE
+will be returned.
 
 ```http
 GET /status HTTP/1.1
@@ -70,7 +70,7 @@ Transfer-Encoding: chunked
 First, install the extension bundle.
 
 ```
-manage-extension --install com.unboundid.broker-status-servlet-1.0-SNAPSHOT.zip
+manage-extension --install com.unboundid.status-servlet-1.0-SNAPSHOT.zip
 ```
 
 Then configure the extension, assign it to an HTTPS connection handler and 
@@ -78,8 +78,8 @@ restart the connection handler.
 
 ```
 dsconfig create-http-servlet-extension --extension-name Status \
-  --type third-party --set "description:Reports Broker service availability" \
-  --set extension-class:com.unboundid.ops.broker.BrokerStatusServletExtension \
+  --type third-party --set "description:Reports Data Governance Server service availability" \
+  --set extension-class:com.unboundid.ops.StatusServletExtension \
   --set extension-argument:path=/status \
   --set extension-argument:monitored-servlet=OAuth2 \
   --set extension-argument:monitored-servlet=SCIM2 \
@@ -96,7 +96,7 @@ dsconfig set-connection-handler-prop --handler-name "HTTPS Connection Handler" \
 
 This is an unsupported example, but support will be provided on a best-effort basis.
 
-Please report issues using the project's [issue tracker](https://github.com/UnboundID/broker-status-servlet/issues).
+Please report issues using the project's [issue tracker](https://github.com/UnboundID/status-servlet/issues).
 
 ## License
 

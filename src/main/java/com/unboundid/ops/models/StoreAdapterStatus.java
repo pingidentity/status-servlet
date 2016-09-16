@@ -13,38 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.unboundid.ops.broker.models;
+package com.unboundid.ops.models;
 
 /**
- * The status of an HTTP servlet.
+ * Store adapter status.
  *
- * @author Jacob Childress <jacob.childress@unboundid.com>
+ * @author Jacob Childress
  */
-public class ServletStatus
+public class StoreAdapterStatus
 {
   private final String name;
-  private final boolean enabled;
+  private final boolean available;
 
 
   /**
-   * Constructs an HTTP servlet status instance.
+   * Constructs a store adapter status instance.
    *
    * @param name
-   *          The HTTP servlet name.
-   * @param enabled
-   *          Whether or not the HTTP servlet is enabled.
+   *          The store adapter name.
+   * @param available
+   *          Whether or not the store adapter is available.
    */
-  public ServletStatus(String name, boolean enabled)
+  public StoreAdapterStatus(String name, boolean available)
   {
     this.name = name;
-    this.enabled = enabled;
+    this.available = available;
   }
 
 
   /**
-   * Gets the HTTP servlet name.
+   * Gets the store adapter name.
    *
-   * @return The HTTP servlet name.
+   * @return The store adapter name.
    */
   public String getName()
   {
@@ -53,13 +53,13 @@ public class ServletStatus
 
 
   /**
-   * Whether or not the HTTP servlet is enabled.
+   * Whether or not the store adapter is available.
    *
-   * @return The enabled state of the HTTP servlet.
+   * @return The store adapter availability.
    */
-  public boolean isEnabled()
+  public boolean isAvailable()
   {
-    return enabled;
+    return available;
   }
 
 
@@ -70,9 +70,9 @@ public class ServletStatus
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    ServletStatus that = (ServletStatus) o;
+    StoreAdapterStatus that = (StoreAdapterStatus) o;
 
-    return enabled == that.enabled && name.equals(that.name);
+    return available == that.available && name.equals(that.name);
   }
 
 
@@ -81,7 +81,7 @@ public class ServletStatus
   public int hashCode()
   {
     int result = name.hashCode();
-    result = 31 * result + (enabled ? 1 : 0);
+    result = 31 * result + (available ? 1 : 0);
     return result;
   }
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.unboundid.ops.broker;
+package com.unboundid.ops;
 
 import com.unboundid.ldap.sdk.Filter;
 import com.unboundid.ldap.sdk.LDAPException;
@@ -21,11 +21,11 @@ import com.unboundid.ldap.sdk.LDAPInterface;
 import com.unboundid.ldap.sdk.SearchResult;
 import com.unboundid.ldap.sdk.SearchResultEntry;
 import com.unboundid.ldap.sdk.SearchScope;
-import com.unboundid.ops.broker.models.BrokerStatus;
-import com.unboundid.ops.broker.models.StatusError;
-import com.unboundid.ops.broker.models.LoadBalancingAlgorithmStatus;
-import com.unboundid.ops.broker.models.ServletStatus;
-import com.unboundid.ops.broker.models.StoreAdapterStatus;
+import com.unboundid.ops.models.Status;
+import com.unboundid.ops.models.StatusError;
+import com.unboundid.ops.models.LoadBalancingAlgorithmStatus;
+import com.unboundid.ops.models.ServletStatus;
+import com.unboundid.ops.models.StoreAdapterStatus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,28 +34,28 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * An LDAP client for an UnboundID Data Broker's monitor backend.
+ * An LDAP client for a server's monitor backend.
  *
- * @author Jacob Childress <jacob.childress@unboundid.com>
+ * @author Jacob Childress
  */
-public class BrokerStatusClient
+public class StatusClient
 {
   private final LDAPInterface connection;
   private List<String> servletsToCheck = new ArrayList<>();
 
 
   /**
-   * Constructor for the Broker status client.
+   * Constructor for the status client.
    *
    * @param connection
    *          An LDAP connection interface.
    * @param servletsToCheck
-   *          The HTTP servlets that must be enabled for the Data Broker to be
+   *          The HTTP servlets that must be enabled for the server to be
    *          considered available.
    * @throws LDAPException
    */
-  public BrokerStatusClient(LDAPInterface connection,
-                            String... servletsToCheck) throws LDAPException
+  public StatusClient(LDAPInterface connection,
+                      String... servletsToCheck) throws LDAPException
   {
     this.connection = connection;
     this.servletsToCheck = Arrays.asList(servletsToCheck);
@@ -63,11 +63,11 @@ public class BrokerStatusClient
 
 
   /**
-   * Gets the Broker status.
+   * Gets the server status.
    *
-   * @return A {@link BrokerStatus} instance.
+   * @return A {@link Status} instance.
    */
-  public BrokerStatus getStatus()
+  public Status getStatus()
   {
     try
     {
@@ -77,13 +77,13 @@ public class BrokerStatusClient
               getStoreAdapterStatuses();
       List<LoadBalancingAlgorithmStatus> lbaStatuses =
               getLoadBalancingAlgorithmStatuses();
-      return BrokerStatus.create(servletStatuses,
-                                 storeAdapterStatuses,
-                                 lbaStatuses);
+      return Status.create(servletStatuses,
+                           storeAdapterStatuses,
+                           lbaStatuses);
     }
     catch (Exception e)
     {
-      return BrokerStatus.create(new StatusError(e));
+      return Status.create(new StatusError(e));
     }
   }
 

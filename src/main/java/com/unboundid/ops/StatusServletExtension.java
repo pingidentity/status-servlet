@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.unboundid.ops.broker;
+package com.unboundid.ops;
 
 import com.unboundid.directory.sdk.http.api.HTTPServletExtension;
 import com.unboundid.directory.sdk.http.config.HTTPServletExtensionConfig;
@@ -28,13 +28,13 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * An {@link HTTPServletExtension} for the {@link BrokerStatusServlet}, which
- * reports status for an UnboundID Data Broker server, and can be used as a
- * health check endpoint for HTTP load balancers.
+ * An {@link HTTPServletExtension} for the {@link StatusServlet}, which
+ * reports a server's status, and can be used as a health check endpoint for
+ * HTTP load balancers.
  *
- * @author Jacob Childress <jacob.childress@unboundid.com>
+ * @author Jacob Childress
  */
-public class BrokerStatusServletExtension extends HTTPServletExtension
+public class StatusServletExtension extends HTTPServletExtension
 {
   private static final String ARG_PATH = "path";
   private static final String ARG_MONITORED_SERVLET = "monitored-servlet";
@@ -46,7 +46,7 @@ public class BrokerStatusServletExtension extends HTTPServletExtension
   @Override
   public String getExtensionName()
   {
-    return "Data Broker Status Servlet";
+    return "Status Servlet";
   }
 
 
@@ -55,13 +55,12 @@ public class BrokerStatusServletExtension extends HTTPServletExtension
   public String[] getExtensionDescription()
   {
     return new String[] {
-            "This extension provides a status servlet for an UnboundID Data " +
-                    "Broker. It reports status for store adapters, LDAP store " +
-                    "adapters, and a configurable set of HTTP servlets. The " +
-                    "status servlet (default path '/status') can be used as a " +
-                    "health check target for HTTP load balancers. The servlet " +
-                    "will return a 200 OK if the Broker's services are " +
-                    "available and a 503 SERVICE UNAVAILABLE if they are not."
+            "This extension provides a status servlet. It reports status for " +
+                "store adapters, LDAP store adapters, and a configurable set of " +
+                "HTTP servlets. The status servlet (default path '/status') can " +
+                "be used as a health check target for HTTP load balancers. The " +
+                "servlet will return a 200 OK if the server's services are " +
+                "available and a 503 SERVICE UNAVAILABLE if they are not."
     };
   }
 
@@ -94,9 +93,9 @@ public class BrokerStatusServletExtension extends HTTPServletExtension
     path = pathArgument.getValue();
     StringArgument monitoredServlets =
             (StringArgument) argumentParser.getNamedArgument(ARG_MONITORED_SERVLET);
-    return new BrokerStatusServlet(httpServerContext,
-                                   httpServerContext.getInternalRootConnection(),
-                                   monitoredServlets.getValues().toArray(
+    return new StatusServlet(httpServerContext,
+                             httpServerContext.getInternalRootConnection(),
+                             monitoredServlets.getValues().toArray(
                                            new String[monitoredServlets.getValues().size()]));
   }
 
