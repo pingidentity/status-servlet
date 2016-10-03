@@ -1,4 +1,4 @@
-# status-servlet
+# status-servlet [![Build Status](https://travis-ci.org/UnboundID/status-servlet.svg?branch=master)](https://travis-ci.org/UnboundID/status-servlet)
 
 This is a status servlet extension for the Data Governance Server. It may be
 used as the health check target for an HTTP load balancer such as HAProxy or
