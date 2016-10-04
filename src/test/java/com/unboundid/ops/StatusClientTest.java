@@ -302,7 +302,6 @@ public class StatusClientTest
     try
     {
       LDAPConnectionOptions connectionOptions = new LDAPConnectionOptions();
-      connectionOptions.setConnectTimeoutMillis(5);
       connectionOptions.setAbandonOnTimeout(true);
       LDAPConnection connection = ds.getConnection(connectionOptions);
 
