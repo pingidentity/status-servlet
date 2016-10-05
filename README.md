@@ -1,8 +1,9 @@
 # status-servlet [![Build Status](https://travis-ci.org/UnboundID/status-servlet.svg?branch=master)](https://travis-ci.org/UnboundID/status-servlet)
 
 This is a status servlet extension for the Data Governance Server. It may be
-used as the health check target for an HTTP load balancer such as HAProxy or
-Amazon Elastic Load Balancer.
+used as the health check target for a layer 7 HTTP load balancer such as HAProxy
+or Amazon Elastic Load Balancer and can generally be considered a more reliable
+indicator of server availability than an arbitrary service path.
 
 ## Usage
 
@@ -67,10 +68,14 @@ Transfer-Encoding: chunked
 
 ## Installation
 
-First, install the extension bundle.
+Java 7 or up is required.
+
+First, build the extension bundle by running `mvn package`. The extension bundle will be saved as a zip file in the `target` directory.
+
+Next, install the extension bundle.
 
 ```
-manage-extension --install com.unboundid.status-servlet-1.0-SNAPSHOT.zip
+manage-extension --install com.unboundid.ops.status-servlet-VERSION.zip
 ```
 
 Then configure the extension, assign it to an HTTPS connection handler and 
@@ -91,6 +96,13 @@ dsconfig set-connection-handler-prop --handler-name "HTTPS Connection Handler" \
 dsconfig set-connection-handler-prop --handler-name "HTTPS Connection Handler" \
   --set enabled:true
 ```
+
+The `create-http-servlet-extension` command above takes the following `extension-argument` values:
+
+| Extension argument | Description |
+| --- | --- |
+| path | The servlet's path. Defaults to `/status`. |
+| monitored-servlet | The name of a servlet to monitor. This corresponds to an entry in the Broker's _HTTP Servlet Extensions_ configuration. If the servlet name ends with the word 'Servlet', this should be omitted. For example, 'OAuth2 Servlet' is specified as 'OAuth2'. This argument may be specified multiple times. If not specified, then no servlets are monitored. |
 
 ## Support and reporting bugs
 
