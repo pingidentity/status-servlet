@@ -1,6 +1,6 @@
 # status-servlet [![Build Status](https://travis-ci.org/UnboundID/status-servlet.svg?branch=master)](https://travis-ci.org/UnboundID/status-servlet)
 
-This is a status servlet extension for the Data Governance Server. It may be
+This is a status servlet extension for the Data Governance Broker. It may be
 used as the health check target for a layer 7 HTTP load balancer such as HAProxy
 or Amazon Elastic Load Balancer and can generally be considered a more reliable
 indicator of server availability than an arbitrary service path.
@@ -8,7 +8,7 @@ indicator of server availability than an arbitrary service path.
 ## Usage
 
 Request the servlet at the configured path. 
-For example, `https://server/status`. If the Data Governance Server's services
+For example, `https://server/status`. If the Data Governance Broker's services
 are available, a 200 OK will be returned. Otherwise, a 503 SERVICE UNAVAILABLE
 will be returned.
 
@@ -83,7 +83,7 @@ restart the connection handler.
 
 ```
 dsconfig create-http-servlet-extension --extension-name Status \
-  --type third-party --set "description:Reports Data Governance Server service availability" \
+  --type third-party --set "description:Reports Data Governance Broker service availability" \
   --set extension-class:com.unboundid.ops.StatusServletExtension \
   --set extension-argument:path=/status \
   --set extension-argument:monitored-servlet=OAuth2 \
