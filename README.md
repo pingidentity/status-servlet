@@ -2,8 +2,10 @@
 
 This is a status servlet extension for the Data Governance Broker. It may be
 used as the health check target for a layer 7 HTTP load balancer such as HAProxy
-or Amazon Elastic Load Balancer and can generally be considered a more reliable
-indicator of server availability than an arbitrary service path.
+or Amazon Elastic Load Balancer. Using this status servlet can generally 
+be considered a more reliable indicator of server availability than an 
+arbitrary service path or '/', because it will only return a success 
+response if the Broker's services are in fact online and available.
 
 ## Usage
 
