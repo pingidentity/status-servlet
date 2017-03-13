@@ -1,4 +1,4 @@
-# status-servlet [![Build Status](https://travis-ci.org/UnboundID/status-servlet.svg?branch=master)](https://travis-ci.org/UnboundID/status-servlet)
+# status-servlet [![Build Status](https://travis-ci.org/pingidentity/status-servlet.svg?branch=master)](https://travis-ci.org/pingidentity/status-servlet)
 
 This is a status servlet extension for the Data Governance Broker. It may be
 used as the health check target for a layer 7 HTTP load balancer such as HAProxy
@@ -108,7 +108,7 @@ The `create-http-servlet-extension` command above takes the following `extension
 
 This is an unsupported example, but support will be provided on a best-effort basis.
 
-Please report issues using the project's [issue tracker](https://github.com/UnboundID/status-servlet/issues).
+Please report issues using the project's [issue tracker](https://github.com/pingidentity/status-servlet/issues).
 
 ## License
 
