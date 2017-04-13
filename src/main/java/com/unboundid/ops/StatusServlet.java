@@ -30,8 +30,9 @@ import java.io.PrintWriter;
 /**
  * An HTTP servlet that reports the availability status of server's store
  * adapters, LDAP load balancing algorithms, and HTTP servlets. A 200 OK is
- * returned if the server's services are available, and a 503 SERVICE
- * UNAVAILABLE is returned otherwise.
+ * returned if the server's services are available, a 429 TOO MANY REQUESTS
+ * is returned if the server is degraded, and a 503 SERVICE UNAVAILABLE is
+ * returned otherwise.
  *
  * @author Jacob Childress
  */
@@ -84,6 +85,12 @@ public class StatusServlet extends HttpServlet
       {
         serverContext.debugInfo("Server status OK");
         response.setStatus(HttpServletResponse.SC_OK);
+      }
+      else if (status.isDegraded())
+      {
+        // Consul considers a 429 response code to be 'warning'.
+        serverContext.debugInfo("Server status degraded");
+        response.setStatus(429); // Too many requests
       }
       else
       {

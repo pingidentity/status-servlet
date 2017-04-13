@@ -32,11 +32,14 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -86,7 +89,7 @@ public class StatusClientTest
   public void serverOkTest() throws Exception
   {
     ds.clear();
-    addBaseEntry();
+    addBaseEntry(new String[0], new String[0]);
 
     Entry servletEntry = createServletEntry(
             "Monitored Servlet https://example.com/monitoredServlet",
@@ -107,6 +110,9 @@ public class StatusClientTest
               new StatusClient(connection, "Monitored Servlet");
       Status status = client.getStatus();
       assertTrue(status.isOK());
+
+      assertEquals(status.getServerStatus(), "available");
+      assertEquals(status.getServerAlerts().size(), 0);
 
       List<ServletStatus> servletStatusList = status.getServletStatuses();
       assertEquals(servletStatusList.size(), 1);
@@ -142,7 +148,7 @@ public class StatusClientTest
   public void servletsNotOkTest() throws Exception
   {
     ds.clear();
-    addBaseEntry();
+    addBaseEntry(new String[0], new String[0]);
 
     Entry servletEntry = createServletEntry(
             "Unmonitored Servlet https://example.com/unmonitoredServlet");
@@ -194,7 +200,7 @@ public class StatusClientTest
   public void lbaNotOkTest() throws Exception
   {
     ds.clear();
-    addBaseEntry();
+    addBaseEntry(new String[0], new String[0]);
 
     Entry servletEntry = createServletEntry(
             "Monitored Servlet https://example.com/monitoredServlet",
@@ -247,7 +253,7 @@ public class StatusClientTest
   public void storeAdapterNotOkTest() throws Exception
   {
     ds.clear();
-    addBaseEntry();
+    addBaseEntry(new String[0], new String[0]);
 
     Entry servletEntry = createServletEntry(
             "Monitored Servlet https://example.com/monitoredServlet",
@@ -295,6 +301,61 @@ public class StatusClientTest
     }
   }
 
+  @Test
+  public void serverDegradedTest() throws Exception
+  {
+    ds.clear();
+
+    // Server is degraded, but 'available'.
+    addBaseEntry(new String[0],
+                 new String[]{"low-disk-space-error"});
+
+    LDAPConnection connection = ds.getConnection();
+    try
+    {
+      StatusClient client = new StatusClient(connection);
+      Status status = client.getStatus();
+      assertFalse(status.isOK());
+
+      assertEquals(status.getServerStatus(), "degraded");
+      assertTrue(status.getServerAlerts().contains("low-disk-space-error"));
+
+      assertFalse(status.isOK());
+    }
+    finally
+    {
+      connection.close();
+    }
+  }
+
+  @Test
+  public void serverUnavailableTest() throws Exception
+  {
+    ds.clear();
+
+    // Server is both unavailable and degraded.
+    addBaseEntry(new String[]{"server-shutting-down"},
+                 new String[]{"low-disk-space-error"});
+
+    LDAPConnection connection = ds.getConnection();
+    try
+    {
+      StatusClient client =
+              new StatusClient(connection);
+      Status status = client.getStatus();
+      assertFalse(status.isOK());
+
+      assertEquals(status.getServerStatus(), "unavailable");
+      assertTrue(status.getServerAlerts().contains("server-shutting-down"));
+      assertTrue(status.getServerAlerts().contains("low-disk-space-error"));
+
+      assertFalse(status.isOK());
+    }
+    finally
+    {
+      connection.close();
+    }
+  }
 
   @Test
   public void connectionFailureTest() throws Exception
@@ -310,6 +371,10 @@ public class StatusClientTest
       StatusClient client =
               new StatusClient(connection);
       Status status = client.getStatus();
+
+      assertEquals(status.getServerStatus(), "unknown");
+      assertEquals(status.getServerAlerts().size(), 0);
+
       assertFalse(status.isOK());
       StatusError error = status.getError();
       assertNotNull(error);
@@ -326,14 +391,26 @@ public class StatusClientTest
   }
 
 
-  private void addBaseEntry() throws Exception
+  private void addBaseEntry(String[] unavailableAlerts,
+                            String[] degradedAlerts) throws Exception
   {
-    ds.add("dn: cn=monitor",
-           "objectClass: top",
-           "objectClass: ds-monitor-entry",
-           "objectClass: ds-general-monitor-entry",
-           "objectClass: extensibleObject",
-           "cn: monitor");
+    List<String> entry = new ArrayList<>();
+    entry.addAll(Arrays.asList(
+            "dn: cn=monitor",
+            "objectClass: top",
+            "objectClass: ds-monitor-entry",
+            "objectClass: ds-general-monitor-entry",
+            "objectClass: extensibleObject",
+            "cn: monitor"));
+    for (String degraded : degradedAlerts)
+    {
+      entry.add("degraded-alert-type: " + degraded);
+    }
+    for (String unavailable : unavailableAlerts)
+    {
+      entry.add("unavailable-alert-type: " + unavailable);
+    }
+    ds.add(entry.toArray(new String[entry.size()]));
   }
 
 

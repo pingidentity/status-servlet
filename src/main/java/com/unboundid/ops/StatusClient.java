@@ -21,6 +21,7 @@ import com.unboundid.ldap.sdk.LDAPInterface;
 import com.unboundid.ldap.sdk.SearchResult;
 import com.unboundid.ldap.sdk.SearchResultEntry;
 import com.unboundid.ldap.sdk.SearchScope;
+import com.unboundid.ops.models.ServerStatus;
 import com.unboundid.ops.models.Status;
 import com.unboundid.ops.models.StatusError;
 import com.unboundid.ops.models.LoadBalancingAlgorithmStatus;
@@ -71,13 +72,16 @@ public class StatusClient
   {
     try
     {
+      ServerStatus serverStatus =
+              getServerStatus();
       List<ServletStatus> servletStatuses =
               getServletStatuses();
       List<StoreAdapterStatus> storeAdapterStatuses =
               getStoreAdapterStatuses();
       List<LoadBalancingAlgorithmStatus> lbaStatuses =
               getLoadBalancingAlgorithmStatuses();
-      return Status.create(servletStatuses,
+      return Status.create(serverStatus,
+                           servletStatuses,
                            storeAdapterStatuses,
                            lbaStatuses);
     }
@@ -85,6 +89,23 @@ public class StatusClient
     {
       return Status.create(new StatusError(e));
     }
+  }
+
+
+  private ServerStatus getServerStatus() throws Exception
+  {
+    SearchResult result =
+            findMonitorEntries("ds-general-monitor-entry");
+    if (result.getEntryCount() != 1)
+    {
+      throw new Exception(String.format(
+              "Expected one and only one general monitor entry; " +
+                      "actual number was %d", result.getEntryCount()));
+    }
+    SearchResultEntry entry = result.getSearchEntries().get(0);
+    return new ServerStatus(
+            entry.getAttributeValues("unavailable-alert-type"),
+            entry.getAttributeValues("degraded-alert-type"));
   }
 
 

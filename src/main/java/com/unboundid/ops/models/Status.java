@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,6 +31,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Status
 {
+  private ServerStatus serverStatus;
   private List<ServletStatus> servletStatuses = new ArrayList<>();
   private List<StoreAdapterStatus> storeAdapterStatuses = new ArrayList<>();
   private List<LoadBalancingAlgorithmStatus> lbaStatuses = new ArrayList<>();
@@ -45,6 +47,8 @@ public class Status
   /**
    * Creates a status instance for a server that is available.
    *
+   * @param serverStatus
+   *          The server's operational status.
    * @param servletStatuses
    *          HTTP servlet statuses.
    * @param storeAdapterStatuses
@@ -53,11 +57,13 @@ public class Status
    *          LDAP load balancing algorithm statuses.
    * @return A status instance.
    */
-  public static Status create(List<ServletStatus> servletStatuses,
+  public static Status create(ServerStatus serverStatus,
+                              List<ServletStatus> servletStatuses,
                               List<StoreAdapterStatus> storeAdapterStatuses,
                               List<LoadBalancingAlgorithmStatus> lbaStatuses)
   {
     Status status = new Status();
+    status.serverStatus = serverStatus;
     status.servletStatuses = servletStatuses;
     status.storeAdapterStatuses = storeAdapterStatuses;
     status.lbaStatuses = lbaStatuses;
@@ -75,8 +81,36 @@ public class Status
   public static Status create(StatusError error)
   {
     Status status = new Status();
+    status.serverStatus = ServerStatus.UNKNOWN;
     status.error = error;
     return status;
+  }
+
+
+  /**
+   * Gets the overall operational status of the server; one of
+   * 'unknown', 'available', 'degraded', or 'unavailable'.
+   *
+   * @return server operational status.
+   */
+  @JsonProperty("server")
+  public String getServerStatus()
+  {
+    return serverStatus.getStatus();
+  }
+
+
+  /**
+   * Gets the server alerts responsible for the server's status,
+   * or an empty list if the server is available.
+   *
+   * @return HTTP servlet status.
+   */
+  @JsonProperty("alertType")
+  public List<String> getServerAlerts()
+  {
+    return serverStatus.getAlertTypes() != null ?
+            Arrays.asList(serverStatus.getAlertTypes()) : null;
   }
 
 
@@ -138,6 +172,12 @@ public class Status
   public boolean isOK()
   {
     boolean ok = true;
+
+    if (! serverStatus.isAvailable())
+    {
+      ok = false;
+    }
+
     for (ServletStatus servletStatus : servletStatuses)
     {
       if (!servletStatus.isEnabled())
@@ -164,6 +204,20 @@ public class Status
       ok = false;
     }
     return ok;
+  }
+
+
+  /**
+   * Returns whether or not this server's operational status is
+   * considered degraded, which can occur, for example, if the
+   * host is low on disk space.
+   *
+   * @return True if the server is degraded; otherwise, false.
+   */
+  @JsonIgnore
+  public boolean isDegraded()
+  {
+    return serverStatus.isDegraded();
   }
 
 
