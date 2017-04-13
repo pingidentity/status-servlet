@@ -82,7 +82,7 @@ Host: example.com
 
 
 
-HTTP/1.1 429 TOO MANY FILES
+HTTP/1.1 429 TOO MANY REQUESTS
 Content-Type: application/json
 Date: Sun, 05 Jun 2016 03:59:14 GMT
 Transfer-Encoding: chunked
