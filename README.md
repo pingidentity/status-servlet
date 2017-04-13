@@ -1,18 +1,20 @@
 # status-servlet [![Build Status](https://travis-ci.org/pingidentity/status-servlet.svg?branch=master)](https://travis-ci.org/pingidentity/status-servlet)
 
-This is a status servlet extension for the Data Governance Broker. It may be
-used as the health check target for a layer 7 HTTP load balancer such as HAProxy
-or Amazon Elastic Load Balancer. Using this status servlet can generally 
-be considered a more reliable indicator of server availability than an 
-arbitrary service path or '/', because it will only return a success 
-response if the Broker's services are in fact online and available.
+This is a status servlet extension for PingData server products like the Directory
+Server and Data Governance Broker. It may be used as the health check target for
+a layer 7 HTTP load balancer such as HAProxy or Amazon Elastic Load Balancer. 
+Using this status servlet can generally be considered a more reliable indicator
+of server availability than an arbitrary service path or '/', because it will
+only return a success response if the server's services are in fact online and
+available.
 
 ## Usage
 
 Request the servlet at the configured path. 
-For example, `https://server/status`. If the Data Governance Broker's services
-are available, a 200 OK will be returned. Otherwise, a 503 SERVICE UNAVAILABLE
-will be returned.
+For example, `https://server/status`. If the server's services are available, a
+200 OK will be returned. If the server is available but degraded, for example if
+disk space if low, a 429 TOO MANY REQUESTS will be returned. Otherwise, a 503
+SERVICE UNAVAILABLE will be returned.
 
 ```http
 GET /status HTTP/1.1
@@ -28,6 +30,7 @@ Date: Sun, 05 Jun 2016 03:59:14 GMT
 Transfer-Encoding: chunked
 
 {
+    "server": "available",
     "loadBalancingAlgorithms": [
         {
             "available": true, 
@@ -65,6 +68,60 @@ Transfer-Encoding: chunked
             "name": "UserStoreAdapter"
         }
     ]
+}
+```
+
+Following is an example of the server being degraded due to having
+a critical alarm condition:
+
+```http
+GET /status HTTP/1.1
+Accept: application/json
+Content-Type: application/json; charset=utf-8
+Host: example.com
+
+
+
+HTTP/1.1 429 TOO MANY REQUESTS
+Content-Type: application/json
+Date: Sun, 05 Jun 2016 03:59:14 GMT
+Transfer-Encoding: chunked
+
+{
+    "server": "degraded",
+    "alertType": [
+        "alarm-critical"
+    ],
+    "loadBalancingAlgorithms": [ ],
+    "servlets": [ ],
+    "storeAdapters": [ ]
+}
+```
+
+Following is an example of the server being unavailable due to having
+entered lockdown mode:
+
+```http
+GET /status HTTP/1.1
+Accept: application/json
+Content-Type: application/json; charset=utf-8
+Host: example.com
+
+
+
+HTTP/1.1 503 SERVICE UNAVAILABLE
+Content-Type: application/json
+Date: Sun, 05 Jun 2016 03:59:14 GMT
+Transfer-Encoding: chunked
+
+{
+    "server": "unavailable",
+    "alertType": [
+        "entering-lockdown-mode"
+    ],
+    "loadBalancingAlgorithms": [ ],
+    "servlets": [ ],
+    "storeAdapters": [ ]
 }
 ```
 

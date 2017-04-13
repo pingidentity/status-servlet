@@ -60,7 +60,8 @@ public class StatusServletExtension extends HTTPServletExtension
                 "HTTP servlets. The status servlet (default path '/status') can " +
                 "be used as a health check target for HTTP load balancers. The " +
                 "servlet will return a 200 OK if the server's services are " +
-                "available and a 503 SERVICE UNAVAILABLE if they are not."
+                "available, a 429 TOO MANY REQUESTS if the server is degraded, " +
+                "and a 503 SERVICE UNAVAILABLE if they are not."
     };
   }
 
