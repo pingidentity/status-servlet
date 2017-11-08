@@ -57,7 +57,7 @@
 
     EXAMPLE:  <server-sdk.version>5.2.0.0</server-sdk.version>
     -->
-    <server-sdk.version>6.0.0.0</server-sdk.version>
+    <server-sdk.version>6.1.0.3</server-sdk.version>
 
     <!--
     The Maven version string of the Server SDK dependency to build against.
