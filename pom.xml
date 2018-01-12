@@ -10,12 +10,12 @@
   <name>status-servlet</name>
   <description>Reports service status in machine-readable form.</description>
   <organization>
-    <name>UnboundID</name>
-    <url>https://unboundid.com</url>
+    <name>Ping Identity Corporation</name>
+    <url>https://pingidentity.com</url>
   </organization>
 
   <scm>
-    <connection>scm:git:git@github.com:UnboundID/status-servlet.git</connection>
+    <connection>scm:git:git@github.com:pingidentity/status-servlet.git</connection>
   </scm>
 
   <profiles>
