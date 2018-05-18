@@ -227,8 +227,11 @@ The `create-http-servlet-extension` command above takes the following
 | monitored-servlet | no | The name of a servlet to monitor. This corresponds to an entry in the server's _HTTP Servlet Extensions_ configuration. If the servlet name ends with the word 'Servlet', this should be omitted. For example, 'SCIM2 Servlet' is specified as 'SCIM2'. This argument may be specified multiple times. If not specified, then no servlets are monitored. |
 | monitor | no | Criteria for determining availability using an entry in the `cn=monitor` backend. The format of this argument value is `<Monitor entry name>:<Availability attribute>:<Availability value list>`, where the availability attribute is the name of an attribute of the monitor entry that should be checked to determine availablility, and the availability value list is a comma-separated list of values that positively indicate availability. For example, `Consent Service Monitor:is-available:true` means that the Consent Service Monitor entry in `cn=monitor` will be checked and marked as available if its `is-available` attribute has a value of `true`. |
 
-Please be aware that any entity monitored via the `monitored-servlet` or 
-`monitor` argument will be considered when determining server availability.
+Please be aware that every entity monitored via the `monitored-servlet` or 
+`monitor` argument will be considered when determining overall server 
+availability. For example, if a servlet referenced by the `monitored-servlet` 
+argument does not exist or is disabled, then the status servlet will respond 
+with a 503 status code.
 
 ### Response codes
 
