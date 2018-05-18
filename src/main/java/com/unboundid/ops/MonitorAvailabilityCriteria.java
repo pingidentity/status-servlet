@@ -2,7 +2,7 @@
  * Copyright 2018 Ping Identity Corporation
  * All Rights Reserved.
  */
-package com.unboundid.ops.models;
+package com.unboundid.ops;
 
 import com.unboundid.ldap.sdk.DN;
 import com.unboundid.ldap.sdk.LDAPException;

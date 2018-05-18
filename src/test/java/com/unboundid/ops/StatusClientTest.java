@@ -21,7 +21,6 @@ import com.unboundid.ldap.sdk.Entry;
 import com.unboundid.ldap.sdk.LDAPConnection;
 import com.unboundid.ldap.sdk.LDAPConnectionOptions;
 import com.unboundid.ldap.sdk.LDAPException;
-import com.unboundid.ops.models.MonitorAvailabilityCriteria;
 import com.unboundid.ops.models.MonitorStatus;
 import com.unboundid.ops.models.Status;
 import com.unboundid.ops.models.LoadBalancingAlgorithmStatus;

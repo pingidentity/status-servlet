@@ -19,7 +19,6 @@ import com.unboundid.directory.sdk.http.api.HTTPServletExtension;
 import com.unboundid.directory.sdk.http.config.HTTPServletExtensionConfig;
 import com.unboundid.directory.sdk.http.types.HTTPServerContext;
 import com.unboundid.ldap.sdk.LDAPException;
-import com.unboundid.ops.models.MonitorAvailabilityCriteria;
 import com.unboundid.util.args.ArgumentException;
 import com.unboundid.util.args.ArgumentParser;
 import com.unboundid.util.args.StringArgument;

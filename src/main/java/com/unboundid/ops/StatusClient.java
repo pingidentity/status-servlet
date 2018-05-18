@@ -22,7 +22,6 @@ import com.unboundid.ldap.sdk.LDAPInterface;
 import com.unboundid.ldap.sdk.SearchResult;
 import com.unboundid.ldap.sdk.SearchResultEntry;
 import com.unboundid.ldap.sdk.SearchScope;
-import com.unboundid.ops.models.MonitorAvailabilityCriteria;
 import com.unboundid.ops.models.MonitorStatus;
 import com.unboundid.ops.models.ServerStatus;
 import com.unboundid.ops.models.Status;

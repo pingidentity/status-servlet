@@ -18,7 +18,6 @@ package com.unboundid.ops;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unboundid.directory.sdk.http.types.HTTPServerContext;
 import com.unboundid.ldap.sdk.LDAPInterface;
-import com.unboundid.ops.models.MonitorAvailabilityCriteria;
 import com.unboundid.ops.models.Status;
 
 import javax.servlet.ServletException;
