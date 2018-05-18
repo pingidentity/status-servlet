@@ -15,12 +15,15 @@
  */
 package com.unboundid.ops;
 
+import com.unboundid.ldap.sdk.DN;
 import com.unboundid.ldap.sdk.Filter;
 import com.unboundid.ldap.sdk.LDAPException;
 import com.unboundid.ldap.sdk.LDAPInterface;
 import com.unboundid.ldap.sdk.SearchResult;
 import com.unboundid.ldap.sdk.SearchResultEntry;
 import com.unboundid.ldap.sdk.SearchScope;
+import com.unboundid.ops.models.MonitorAvailabilityCriteria;
+import com.unboundid.ops.models.MonitorStatus;
 import com.unboundid.ops.models.ServerStatus;
 import com.unboundid.ops.models.Status;
 import com.unboundid.ops.models.StatusError;
@@ -29,20 +32,32 @@ import com.unboundid.ops.models.ServletStatus;
 import com.unboundid.ops.models.StoreAdapterStatus;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * An LDAP client for a server's monitor backend.
- *
- * @author Jacob Childress
  */
 public class StatusClient
 {
   private final LDAPInterface connection;
-  private List<String> servletsToCheck = new ArrayList<>();
+  private final List<String> servletsToCheck;
+  private final List<MonitorAvailabilityCriteria> monitorsToCheck;
+
+
+  /**
+   * Constructor for the status client.
+   *
+   * @param connection
+   *          An LDAP connection interface.
+   */
+  public StatusClient(LDAPInterface connection)
+  {
+    this.connection = connection;
+    this.servletsToCheck = new ArrayList<>();
+    this.monitorsToCheck = new ArrayList<>();
+  }
 
 
   /**
@@ -53,13 +68,16 @@ public class StatusClient
    * @param servletsToCheck
    *          The HTTP servlets that must be enabled for the server to be
    *          considered available.
-   * @throws LDAPException
+   * @param monitorsToCheck
+   *          The cn=monitor entries that will be checked.
    */
   public StatusClient(LDAPInterface connection,
-                      String... servletsToCheck) throws LDAPException
+                      List<String> servletsToCheck,
+                      List<MonitorAvailabilityCriteria> monitorsToCheck)
   {
     this.connection = connection;
-    this.servletsToCheck = Arrays.asList(servletsToCheck);
+    this.servletsToCheck = servletsToCheck;
+    this.monitorsToCheck = monitorsToCheck;
   }
 
 
@@ -76,12 +94,15 @@ public class StatusClient
               getServerStatus();
       List<ServletStatus> servletStatuses =
               getServletStatuses();
+      List<MonitorStatus> monitorStatuses =
+          getMonitorStatuses();
       List<StoreAdapterStatus> storeAdapterStatuses =
               getStoreAdapterStatuses();
       List<LoadBalancingAlgorithmStatus> lbaStatuses =
               getLoadBalancingAlgorithmStatuses();
       return Status.create(serverStatus,
                            servletStatuses,
+                           monitorStatuses,
                            storeAdapterStatuses,
                            lbaStatuses);
     }
@@ -95,7 +116,7 @@ public class StatusClient
   private ServerStatus getServerStatus() throws Exception
   {
     SearchResult result =
-            findMonitorEntries("ds-general-monitor-entry");
+            findMonitorEntriesByObjectClass("ds-general-monitor-entry");
     if (result.getEntryCount() != 1)
     {
       throw new Exception(String.format(
@@ -116,7 +137,7 @@ public class StatusClient
     if (!servletsToCheck.isEmpty())
     {
       SearchResult result =
-              findMonitorEntries("ds-http-servlet-config-monitor-entry",
+              findMonitorEntriesByObjectClass("ds-http-servlet-config-monitor-entry",
                                  "enabled-servlet-and-path");
       if (result.getEntryCount() != 1)
       {
@@ -149,11 +170,48 @@ public class StatusClient
   }
 
 
+  private List<MonitorStatus> getMonitorStatuses() throws Exception
+  {
+    List<MonitorStatus> monitorStatuses = new ArrayList<>();
+    if (!monitorsToCheck.isEmpty())
+    {
+      for (MonitorAvailabilityCriteria criteria : monitorsToCheck)
+      {
+        MonitorStatus monitorStatus =
+            new MonitorStatus(criteria.getMonitorEntryName());
+
+        SearchResult result =
+            findMonitorEntryByDN(criteria.getMonitorEntryDN());
+        SearchResultEntry entry =
+            result.getSearchEntry(criteria.getMonitorEntryDN().toString());
+
+        if (entry != null)
+        {
+          String availabilityValue =
+              entry.getAttributeValue(criteria.getAvailabilityAttribute());
+          if (availabilityValue != null)
+          {
+            boolean available =
+                criteria.getAvailabilityValues().contains(
+                    availabilityValue.toLowerCase());
+            monitorStatus.setAvailable(available);
+
+            monitorStatus.setMonitorProperties(entry.getAttributes());
+          }
+        }
+
+        monitorStatuses.add(monitorStatus);
+      }
+    }
+    return monitorStatuses;
+  }
+
+
   private List<StoreAdapterStatus> getStoreAdapterStatuses() throws LDAPException
   {
     List<StoreAdapterStatus> storeAdapterStatuses = new ArrayList<>();
     SearchResult result =
-            findMonitorEntries("ds-store-adapter-monitor-entry",
+            findMonitorEntriesByObjectClass("ds-store-adapter-monitor-entry",
                                "store-adapter-name", "store-adapter-status");
     for (SearchResultEntry entry : result.getSearchEntries())
     {
@@ -170,7 +228,8 @@ public class StatusClient
   {
     List<LoadBalancingAlgorithmStatus> lbaStatuses = new ArrayList<>();
     SearchResult result =
-            findMonitorEntries("ds-load-balancing-algorithm-monitor-entry", "*");
+            findMonitorEntriesByObjectClass(
+                "ds-load-balancing-algorithm-monitor-entry", "*");
     for (SearchResultEntry entry : result.getSearchEntries())
     {
       lbaStatuses.add(new LoadBalancingAlgorithmStatus(
@@ -184,13 +243,21 @@ public class StatusClient
   }
 
 
-  private SearchResult findMonitorEntries(String objectClass,
-                                          String... attributes) throws LDAPException
+  private SearchResult findMonitorEntriesByObjectClass(
+      String objectClass, String... attributes) throws LDAPException
   {
     return connection.search(
             "cn=monitor", SearchScope.SUB,
             Filter.createEqualityFilter("objectClass", objectClass),
             attributes);
+  }
+
+
+  private SearchResult findMonitorEntryByDN(DN dn) throws LDAPException
+  {
+    return connection.search(
+        dn.toString(), SearchScope.BASE,
+        Filter.createANDFilter(new ArrayList<Filter>()));
   }
 
 

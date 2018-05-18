@@ -18,6 +18,7 @@ package com.unboundid.ops;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unboundid.directory.sdk.http.types.HTTPServerContext;
 import com.unboundid.ldap.sdk.LDAPInterface;
+import com.unboundid.ops.models.MonitorAvailabilityCriteria;
 import com.unboundid.ops.models.Status;
 
 import javax.servlet.ServletException;
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 /**
  * An HTTP servlet that reports the availability status of server's store
@@ -33,8 +35,6 @@ import java.io.PrintWriter;
  * returned if the server's services are available, a 429 TOO MANY REQUESTS
  * is returned if the server is degraded, and a 503 SERVICE UNAVAILABLE is
  * returned otherwise.
- *
- * @author Jacob Childress
  */
 public class StatusServlet extends HttpServlet
 {
@@ -43,7 +43,8 @@ public class StatusServlet extends HttpServlet
 
   private final HTTPServerContext serverContext;
   private final LDAPInterface connection;
-  private final String[] servletsToCheck;
+  private final List<String> servletsToCheck;
+  private final List<MonitorAvailabilityCriteria> monitorsToCheck;
 
 
   /**
@@ -56,14 +57,18 @@ public class StatusServlet extends HttpServlet
    * @param servletsToCheck
    *          The HTTP servlets that must be enabled for the server to be
    *          considered available.
+   * @param monitorsToCheck
+   *          The cn=monitor entries that will be checked.
    */
   public StatusServlet(HTTPServerContext serverContext,
                        LDAPInterface connection,
-                       String... servletsToCheck)
+                       List<String> servletsToCheck,
+                       List<MonitorAvailabilityCriteria> monitorsToCheck)
   {
     this.serverContext = serverContext;
     this.connection = connection;
     this.servletsToCheck = servletsToCheck;
+    this.monitorsToCheck = monitorsToCheck;
   }
 
 
@@ -77,7 +82,7 @@ public class StatusServlet extends HttpServlet
     {
       serverContext.debugVerbose("Initializing StatusClient");
       StatusClient client =
-              new StatusClient(connection, servletsToCheck);
+              new StatusClient(connection, servletsToCheck, monitorsToCheck);
       serverContext.debugVerbose("Retrieving status");
       Status status = client.getStatus();
       response.setContentType("application/json");

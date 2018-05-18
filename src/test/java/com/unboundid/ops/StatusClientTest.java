@@ -20,7 +20,9 @@ import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
 import com.unboundid.ldap.sdk.Entry;
 import com.unboundid.ldap.sdk.LDAPConnection;
 import com.unboundid.ldap.sdk.LDAPConnectionOptions;
-import com.unboundid.ldap.sdk.schema.Schema;
+import com.unboundid.ldap.sdk.LDAPException;
+import com.unboundid.ops.models.MonitorAvailabilityCriteria;
+import com.unboundid.ops.models.MonitorStatus;
 import com.unboundid.ops.models.Status;
 import com.unboundid.ops.models.LoadBalancingAlgorithmStatus;
 import com.unboundid.ops.models.ServletStatus;
@@ -34,22 +36,45 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 /**
  * Tests for {@link StatusClient}.
- *
- * @author jacobc
  */
 public class StatusClientTest
 {
   private static final String BASE_DN = "dc=example,dc=com";
+  private static final List<String> SERVLETS_TO_CHECK =
+      new ArrayList<>(Collections.singletonList("Monitored Servlet"));
+  private static final String MONITOR_NAME_1 = "Test Monitor 1";
+  private static final String MONITOR_NAME_2 = "Test Monitor 2";
+  private static List<MonitorAvailabilityCriteria> MONITORS_TO_CHECK;
+  private static final List<MonitorAvailabilityCriteria> IGNORE_MONITORS =
+      Collections.emptyList();
+
+  static
+  {
+    try
+    {
+      MonitorAvailabilityCriteria monitorEntryInfo1 =
+          MonitorAvailabilityCriteria
+              .create(MONITOR_NAME_1 + ":state:READY,running");
+      MonitorAvailabilityCriteria monitorEntryInfo2 =
+          MonitorAvailabilityCriteria.create(MONITOR_NAME_2 + ":available:true");
+      MONITORS_TO_CHECK = new ArrayList<>(Arrays.asList(
+          monitorEntryInfo1, monitorEntryInfo2));
+    }
+    catch (LDAPException e)
+    {
+      // Ignore. Won't happen.
+    }
+  }
 
   private InMemoryDirectoryServer ds;
 
@@ -65,9 +90,7 @@ public class StatusClientTest
     config.setBaseDNs("cn=monitor");
     config.setEnforceSingleStructuralObjectClass(false);
     config.setEnforceAttributeSyntaxCompliance(false);
-    config.setSchema(Schema.mergeSchemas(
-            Schema.getDefaultStandardSchema(),
-            Schema.getSchema(getSystemResourceAsFile("monitor-schema.ldif"))));
+    config.setSchema(null);
     ds = new InMemoryDirectoryServer(config);
     ds.startListening();
   }
@@ -94,12 +117,16 @@ public class StatusClientTest
     Entry servletEntry = createServletEntry(
             "Monitored Servlet https://example.com/monitoredServlet",
             "Unmonitored Servlet https://example.com/unmonitoredServlet");
+    Entry monitorEntry1 = createMonitorEntry(MONITOR_NAME_1, "state", "ready");
+    Entry monitorEntry2 = createMonitorEntry(MONITOR_NAME_2, "available", "true");
     Entry lbaEntry = createLoadBalancingAlgorithmEntry(
             "User Store LBA", "AVAILABLE", 1, 0, 0);
     Entry storeAdapterEntry = createStoreAdapterEntry(
             "UserStoreAdapter", "AVAILABLE");
 
     ds.add(servletEntry);
+    ds.add(monitorEntry1);
+    ds.add(monitorEntry2);
     ds.add(lbaEntry);
     ds.add(storeAdapterEntry);
 
@@ -107,7 +134,7 @@ public class StatusClientTest
     try
     {
       StatusClient client =
-              new StatusClient(connection, "Monitored Servlet");
+              new StatusClient(connection, SERVLETS_TO_CHECK, MONITORS_TO_CHECK);
       Status status = client.getStatus();
       assertTrue(status.isOK());
 
@@ -119,6 +146,15 @@ public class StatusClientTest
       ServletStatus servletStatus = servletStatusList.get(0);
       assertEquals(servletStatus.getName(), "Monitored Servlet");
       assertTrue(servletStatus.isEnabled());
+
+      List<MonitorStatus> monitorStatusList = status.getMonitorStatuses();
+      assertEquals(monitorStatusList.size(), 2);
+      for (MonitorStatus monitorStatus : monitorStatusList)
+      {
+        assertNotNull(monitorStatus.getName());
+        assertTrue(monitorStatus.isAvailable());
+        assertNotNull(monitorStatus.getMonitorProperties());
+      }
 
       List<LoadBalancingAlgorithmStatus> lbaStatusList =
               status.getLoadBalancingAlgorithmStatuses();
@@ -132,6 +168,82 @@ public class StatusClientTest
 
       List<StoreAdapterStatus> storeAdapterStatusList =
               status.getStoreAdapterStatuses();
+      assertEquals(storeAdapterStatusList.size(), 1);
+      StoreAdapterStatus storeAdapterStatus = storeAdapterStatusList.get(0);
+      assertEquals(storeAdapterStatus.getName(), "UserStoreAdapter");
+      assertTrue(storeAdapterStatus.isAvailable());
+    }
+    finally
+    {
+      connection.close();
+    }
+  }
+
+
+  @Test
+  public void monitorNotOkTest() throws Exception
+  {
+    ds.clear();
+    addBaseEntry(new String[0], new String[0]);
+
+    Entry servletEntry = createServletEntry(
+        "Monitored Servlet https://example.com/monitoredServlet",
+        "Unmonitored Servlet https://example.com/unmonitoredServlet");
+    Entry monitorEntry1 = createMonitorEntry(MONITOR_NAME_1, "state", "ready");
+    Entry monitorEntry2 = createMonitorEntry(MONITOR_NAME_2, "available", "false");
+    Entry lbaEntry = createLoadBalancingAlgorithmEntry(
+        "User Store LBA", "AVAILABLE", 1, 0, 0);
+    Entry storeAdapterEntry = createStoreAdapterEntry(
+        "UserStoreAdapter", "AVAILABLE");
+
+    ds.add(servletEntry);
+    ds.add(monitorEntry1);
+    ds.add(monitorEntry2);
+    ds.add(lbaEntry);
+    ds.add(storeAdapterEntry);
+
+    LDAPConnection connection = ds.getConnection();
+    try
+    {
+      StatusClient client =
+          new StatusClient(connection, SERVLETS_TO_CHECK, MONITORS_TO_CHECK);
+      Status status = client.getStatus();
+      assertFalse(status.isOK());
+
+      List<ServletStatus> servletStatusList = status.getServletStatuses();
+      assertEquals(servletStatusList.size(), 1);
+      ServletStatus servletStatus = servletStatusList.get(0);
+      assertEquals(servletStatus.getName(), "Monitored Servlet");
+      assertTrue(servletStatus.isEnabled());
+
+      List<MonitorStatus> monitorStatusList = status.getMonitorStatuses();
+      assertEquals(monitorStatusList.size(), 2);
+      for (MonitorStatus monitorStatus : monitorStatusList)
+      {
+        String name = monitorStatus.getName();
+        if (name.equalsIgnoreCase(MONITOR_NAME_1))
+        {
+          assertTrue(monitorStatus.isAvailable());
+        }
+        if (name.equalsIgnoreCase(MONITOR_NAME_2))
+        {
+          assertFalse(monitorStatus.isAvailable());
+        }
+        assertNotNull(monitorStatus.getMonitorProperties());
+      }
+
+      List<LoadBalancingAlgorithmStatus> lbaStatusList =
+          status.getLoadBalancingAlgorithmStatuses();
+      assertEquals(lbaStatusList.size(), 1);
+      LoadBalancingAlgorithmStatus lbaStatus = lbaStatusList.get(0);
+      assertEquals(lbaStatus.getName(), "User Store LBA");
+      assertTrue(lbaStatus.isAvailable());
+      assertEquals(lbaStatus.getNumAvailableServers(), 1);
+      assertEquals(lbaStatus.getNumDegradedServers(), 0);
+      assertEquals(lbaStatus.getNumUnavailableServers(), 0);
+
+      List<StoreAdapterStatus> storeAdapterStatusList =
+          status.getStoreAdapterStatuses();
       assertEquals(storeAdapterStatusList.size(), 1);
       StoreAdapterStatus storeAdapterStatus = storeAdapterStatusList.get(0);
       assertEquals(storeAdapterStatus.getName(), "UserStoreAdapter");
@@ -165,7 +277,7 @@ public class StatusClientTest
     try
     {
       StatusClient client =
-              new StatusClient(connection, "Monitored Servlet");
+              new StatusClient(connection, SERVLETS_TO_CHECK, IGNORE_MONITORS);
       Status status = client.getStatus();
       assertFalse(status.isOK());
 
@@ -218,7 +330,7 @@ public class StatusClientTest
     try
     {
       StatusClient client =
-              new StatusClient(connection, "Monitored Servlet");
+              new StatusClient(connection, SERVLETS_TO_CHECK, IGNORE_MONITORS);
       Status status = client.getStatus();
       assertFalse(status.isOK());
 
@@ -271,7 +383,7 @@ public class StatusClientTest
     try
     {
       StatusClient client =
-              new StatusClient(connection, "Monitored Servlet");
+              new StatusClient(connection, SERVLETS_TO_CHECK, IGNORE_MONITORS);
       Status status = client.getStatus();
       assertFalse(status.isOK());
 
@@ -337,11 +449,10 @@ public class StatusClientTest
     addBaseEntry(new String[]{"server-shutting-down"},
                  new String[]{"low-disk-space-error"});
 
-    LDAPConnection connection = ds.getConnection();
-    try
+    try (LDAPConnection connection = ds.getConnection())
     {
       StatusClient client =
-              new StatusClient(connection);
+          new StatusClient(connection);
       Status status = client.getStatus();
       assertFalse(status.isOK());
 
@@ -350,10 +461,6 @@ public class StatusClientTest
       assertTrue(status.getServerAlerts().contains("low-disk-space-error"));
 
       assertFalse(status.isOK());
-    }
-    finally
-    {
-      connection.close();
     }
   }
 
@@ -394,14 +501,13 @@ public class StatusClientTest
   private void addBaseEntry(String[] unavailableAlerts,
                             String[] degradedAlerts) throws Exception
   {
-    List<String> entry = new ArrayList<>();
-    entry.addAll(Arrays.asList(
-            "dn: cn=monitor",
-            "objectClass: top",
-            "objectClass: ds-monitor-entry",
-            "objectClass: ds-general-monitor-entry",
-            "objectClass: extensibleObject",
-            "cn: monitor"));
+    List<String> entry = new ArrayList<>(Arrays.asList(
+        "dn: cn=monitor",
+        "objectClass: top",
+        "objectClass: ds-monitor-entry",
+        "objectClass: ds-general-monitor-entry",
+        "objectClass: extensibleObject",
+        "cn: monitor"));
     for (String degraded : degradedAlerts)
     {
       entry.add("degraded-alert-type: " + degraded);
@@ -426,6 +532,21 @@ public class StatusClientTest
     {
       entry.addAttribute("enabled-servlet-and-path", enabledServlet);
     }
+    return entry;
+  }
+
+
+  private Entry createMonitorEntry(String name,
+                                   String availabilityAttribute,
+                                   String availabilityValue)
+  {
+    Entry entry = new Entry("cn=" + name + ",cn=monitor");
+    entry.addAttribute("objectClass", "top");
+    entry.addAttribute("objectClass", "ds-monitor-entry");
+    entry.addAttribute("objectClass", "ds-test-monitor-entry");
+    entry.addAttribute(availabilityAttribute, availabilityValue);
+    entry.addAttribute("single-valued", "value");
+    entry.addAttribute("multi-valued", "value1", "value2");
     return entry;
   }
 
