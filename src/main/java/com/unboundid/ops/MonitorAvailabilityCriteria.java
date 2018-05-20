@@ -30,7 +30,11 @@ public class MonitorAvailabilityCriteria
    * Creates a monitor availability criteria instance.
    *
    * @param arg
-   *          A monitor extension argument value.
+   *          A monitor extension argument value. This should be a three-part
+   *          colon-delimited string, where the first part is the name of a
+   *          monitor entry, the second part is the attribute to check for
+   *          availability status, and the third part is a comma-delimited set
+   *          of one or more attribute values that indicate availability.
    * @return A new monitor availability criteria instance.
    * @throws LDAPException if the monitor entry DN cannot be constructed.
    */
