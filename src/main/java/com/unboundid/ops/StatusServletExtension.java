@@ -24,20 +24,24 @@ import com.unboundid.util.args.ArgumentParser;
 import com.unboundid.util.args.StringArgument;
 
 import javax.servlet.http.HttpServlet;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * An {@link HTTPServletExtension} for the {@link StatusServlet}, which
  * reports a server's status, and can be used as a health check endpoint for
  * HTTP load balancers.
- *
- * @author Jacob Childress
  */
 public class StatusServletExtension extends HTTPServletExtension
 {
+  public static final Pattern MONITOR_ARG_RX =
+      Pattern.compile("([\\w\\s-]+):([\\w-]+):(.+)");
+
   private static final String ARG_PATH = "path";
   private static final String ARG_MONITORED_SERVLET = "monitored-servlet";
+  private static final String ARG_MONITOR = "monitor";
 
   private String path;
 
@@ -56,12 +60,16 @@ public class StatusServletExtension extends HTTPServletExtension
   {
     return new String[] {
             "This extension provides a status servlet. It reports status for " +
-                "store adapters, LDAP store adapters, and a configurable set of " +
-                "HTTP servlets. The status servlet (default path '/status') can " +
+                "store adapters, LDAP store adapters, a configurable set of " +
+                "HTTP servlets, and a configurable set of monitor entries, " +
+                "all of which are used to determine the server's overall " +
+                "availability status.",
+                "The status servlet (default path '/status') can " +
                 "be used as a health check target for HTTP load balancers. The " +
                 "servlet will return a 200 OK if the server's services are " +
                 "available, a 429 TOO MANY REQUESTS if the server is degraded, " +
-                "and a 503 SERVICE UNAVAILABLE if they are not."
+                "and a 503 SERVICE UNAVAILABLE if the server's services are " +
+                "unavailable."
     };
   }
 
@@ -78,7 +86,21 @@ public class StatusServletExtension extends HTTPServletExtension
     parser.addArgument(new StringArgument(
             null, ARG_MONITORED_SERVLET, false, 0, "{servletName}",
             "The name of a servlet that is expected to be enabled. " +
-                    "By default, no servlets are monitored."));
+                    "By default, no servlets are monitored by this extension."));
+    StringArgument monitorArgument =
+        new StringArgument(null, ARG_MONITOR, false, 0,
+            "{monitorEntryName:availabilityAttribute}", "The RDN value of an " +
+            "entry in cn=monitor that should be checked for availability, " +
+            "the attribute of that entry that reports availability, and a" +
+            "comma-separated list of acceptable values, each separated by a " +
+            "colon (':') character. By default, no monitor entries are " +
+            "monitored by this extension.");
+    monitorArgument.setValueRegex(MONITOR_ARG_RX,
+        "The name of a cn=monitor backend entry, the attribute that indicates " +
+            "its availability, and a comma-separated list of acceptable values, " +
+            "each separated by a colon. For example, " +
+            "'Consent Service Monitor:is-available:true'");
+    parser.addArgument(monitorArgument);
   }
 
 
@@ -94,10 +116,19 @@ public class StatusServletExtension extends HTTPServletExtension
     path = pathArgument.getValue();
     StringArgument monitoredServlets =
             (StringArgument) argumentParser.getNamedArgument(ARG_MONITORED_SERVLET);
+    StringArgument monitoredMonitorEntries =
+        (StringArgument) argumentParser.getNamedArgument(ARG_MONITOR);
+    List<MonitorAvailabilityCriteria> monitorAvailabilityCriteria =
+        new ArrayList<>();
+    for (String monitorArgValue : monitoredMonitorEntries.getValues())
+    {
+      monitorAvailabilityCriteria.add(
+          MonitorAvailabilityCriteria.create(monitorArgValue));
+    }
     return new StatusServlet(httpServerContext,
                              httpServerContext.getInternalRootConnection(),
-                             monitoredServlets.getValues().toArray(
-                                           new String[monitoredServlets.getValues().size()]));
+                             monitoredServlets.getValues(),
+                             monitorAvailabilityCriteria);
   }
 
 

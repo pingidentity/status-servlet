@@ -5,12 +5,17 @@
   <id>server-sdk-extension-bundle-assembly</id>
   <formats>
     <format>zip</format>
-    <format>dir</format>
+    <!-- You can uncomment the following line if you want to examine the
+    build output without having to extract the zip artifact. -->
+    <!--<format>dir</format>-->
   </formats>
   <fileSets>
+    <!-- Copy the extension config directory.
+    The file config/update/file-directives.properties is expected by
+    the server, but user-provided files can be placed here, too. -->
     <fileSet>
-      <outputDirectory>config/update</outputDirectory>
-      <directory>${project.basedir}/src/main/assembly/config/update</directory>
+      <outputDirectory>config</outputDirectory>
+      <directory>${project.basedir}/src/main/assembly/config</directory>
     </fileSet>
     <!-- Copy generated extension documentation. This path must match the
     velocityResourceLoaderPath value in the POM. -->
@@ -31,8 +36,9 @@
     <!-- Copy the project artifact to the root directory. -->
     <dependencySet>
       <outputDirectory>.</outputDirectory>
+      <useProjectArtifact>true</useProjectArtifact>
       <includes>
-        <include>${artifact.artifactId}*</include>
+        <include>${artifact}</include>
       </includes>
     </dependencySet>
     <!-- Copy dependencies to lib. -->

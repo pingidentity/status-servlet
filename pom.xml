@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.unboundid.ops</groupId>
   <artifactId>status-servlet</artifactId>
-  <version>1.2.1-SNAPSHOT</version>
+  <version>1.3.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>status-servlet</name>
@@ -41,7 +41,7 @@
 
     <!--
     The following properties will be used during the course of building one or
-    more extensions for UnboundID server products. If multiple extensions will
+    more extensions for PingData server products. If multiple extensions will
     be packaged into the same jar file, then these property values should refer
     to the collection rather than individual extensions.
     -->
@@ -57,7 +57,7 @@
 
     EXAMPLE:  <server-sdk.version>5.2.0.0</server-sdk.version>
     -->
-    <server-sdk.version>6.1.0.3</server-sdk.version>
+    <server-sdk.version>6.2.0.0</server-sdk.version>
 
     <!--
     The Maven version string of the Server SDK dependency to build against.
@@ -115,7 +115,7 @@
 
     EXAMPLE:  extension.vendor.contact=support@example.com
     -->
-    <extension.vendor.contact>jacob.childress@unboundid.com</extension.vendor.contact>
+    <extension.vendor.contact>unsupported@pingidentity.com</extension.vendor.contact>
 
     <!--
     Indicates whether to include the extension source code in the jar file along
@@ -132,7 +132,7 @@
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <jackson-version>2.5.0</jackson-version>
+    <jackson-version>2.7.4</jackson-version>
   </properties>
 
   <build>
@@ -215,9 +215,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.10.3</version>
+        <version>2.10.4</version>
         <configuration>
           <outputDirectory>${project.build.directory}/javadoc</outputDirectory>
+          <stylesheetfile>javadoc/ping-javadoc-stylesheet.css</stylesheetfile>
           <linksource>${include.source}</linksource>
           <show>protected</show>
         </configuration>
@@ -257,7 +258,7 @@
       <plugin>
         <groupId>com.unboundid</groupId>
         <artifactId>server-sdk-docs-maven-plugin</artifactId>
-        <version>1.0.8</version>
+        <version>1.0.14</version>
         <configuration>
           <!-- The following configuration may be customized, if needed. -->
           <velocityResourceLoaderPath>${project.basedir}/src/main/resources/velocity</velocityResourceLoaderPath>
@@ -285,7 +286,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.2-beta-5</version>
+        <version>3.0.0</version>
         <executions>
           <execution>
             <id>create-zip-archive</id>
@@ -297,7 +298,6 @@
               <descriptors>
                 <descriptor>src/main/assembly/assembly.xml</descriptor>
               </descriptors>
-              <finalName>${extension.vendor.id}.${extension.name}-${project.version}</finalName>
               <appendAssemblyId>false</appendAssemblyId>
             </configuration>
           </execution>

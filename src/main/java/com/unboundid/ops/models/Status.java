@@ -25,14 +25,13 @@ import java.util.List;
 
 /**
  * Reports availability information for a server.
- *
- * @author Jacob Childress
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Status
 {
   private ServerStatus serverStatus;
   private List<ServletStatus> servletStatuses = new ArrayList<>();
+  private List<MonitorStatus> monitorStatuses = new ArrayList<>();
   private List<StoreAdapterStatus> storeAdapterStatuses = new ArrayList<>();
   private List<LoadBalancingAlgorithmStatus> lbaStatuses = new ArrayList<>();
   private StatusError error;
@@ -51,6 +50,8 @@ public class Status
    *          The server's operational status.
    * @param servletStatuses
    *          HTTP servlet statuses.
+   * @param monitorStatuses
+   *          Monitor entry statuses.
    * @param storeAdapterStatuses
    *          Store adapter statuses.
    * @param lbaStatuses
@@ -59,11 +60,13 @@ public class Status
    */
   public static Status create(ServerStatus serverStatus,
                               List<ServletStatus> servletStatuses,
+                              List<MonitorStatus> monitorStatuses,
                               List<StoreAdapterStatus> storeAdapterStatuses,
                               List<LoadBalancingAlgorithmStatus> lbaStatuses)
   {
     Status status = new Status();
     status.serverStatus = serverStatus;
+    status.monitorStatuses = monitorStatuses;
     status.servletStatuses = servletStatuses;
     status.storeAdapterStatuses = storeAdapterStatuses;
     status.lbaStatuses = lbaStatuses;
@@ -127,6 +130,18 @@ public class Status
 
 
   /**
+   * Gets the status for any monitored cn=monitor entries.
+   *
+   * @return Monitor entry status.
+   */
+  @JsonProperty("monitors")
+  public List<MonitorStatus> getMonitorStatuses()
+  {
+    return monitorStatuses;
+  }
+
+
+  /**
    * Gets the status for store adapters.
    *
    * @return Store adapters status.
@@ -181,6 +196,13 @@ public class Status
     for (ServletStatus servletStatus : servletStatuses)
     {
       if (!servletStatus.isEnabled())
+      {
+        ok = false;
+      }
+    }
+    for (MonitorStatus monitorStatus : monitorStatuses)
+    {
+      if (!monitorStatus.isAvailable())
       {
         ok = false;
       }
