@@ -134,7 +134,7 @@
 
     <jackson-version>2.7.4</jackson-version>
 
-    <jackson.databind-version>2.7.9.4</jackson.databind-version>
+    <jackson.databind-version>2.7.9.5</jackson.databind-version>
   </properties>
 
   <build>
@@ -318,16 +318,19 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
       <version>${jackson-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>${jackson.databind-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
       <version>${jackson-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>
