@@ -134,7 +134,7 @@
 
     <jackson-version>2.7.4</jackson-version>
 
-    <jackson.databind-version>2.7.9.5</jackson.databind-version>
+    <jackson.databind-version>2.8.11.1</jackson.databind-version>
   </properties>
 
   <build>
