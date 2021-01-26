@@ -1,5 +1,8 @@
 # status-servlet [![Build Status](https://travis-ci.org/pingidentity/status-servlet.svg?branch=master)](https://travis-ci.org/pingidentity/status-servlet)
 
+:warning: | This project is no longer actively maintained. We encourage you instead to use the availability servlet introduced in the 7.3.0.0 release.
+:---: | :---
+
 This is a status servlet extension for PingData server products like the Directory
 Server and Data Governance. It may be used as the health check target for
 a layer 7 HTTP load balancer such as HAProxy or Amazon Elastic Load Balancer. 
